@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { initializeApp } from 'firebase/app'
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth'
-import { getFirestore, collection, query, orderBy, where, getDocs, doc, getDoc, setDoc, addDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, onSnapshot } from 'firebase/firestore'
+import { getFirestore, collection, query, orderBy, where, getDocs, doc, getDoc, setDoc, addDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, onSnapshot, deleteDoc } from 'firebase/firestore'
 import './App.css'
 
 const firebaseConfig = {
@@ -16,7 +16,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const ADMIN_UID = "GANTI_DENGAN_UID_KAMU"
 
 function App() {
   const [page, setPage] = useState('login')
@@ -34,8 +33,9 @@ function App() {
       if(u) {
         setUser(u)
         const userDoc = await getDoc(doc(db, "users", u.uid))
-        setUserData(userDoc.data())
-        setIsAdmin(u.uid === ADMIN_UID)
+        const data = userDoc.data()
+        setUserData(data)
+        setIsAdmin(data?.isMember === true) // Admin = isMember true
         setTimeout(() => { setPage('beranda') }, 500)
 
         onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), async (snap) => {
@@ -235,12 +235,27 @@ function LoginPage({ setPage }) {
 function DaftarPage({ setPage }) { 
   const [form, setForm] = useState({ nama: '', email: '', pass: '', umur: '', bidang: '', domisili: '', kelamin: 'Laki-laki' }); 
   const [showPass, setShowPass] = useState(false); 
-  async function daftar() { 
+  
+  async function daftar(isMember = false) { 
     if(!form.nama || !form.email || !form.pass) return alert('Isi semua data wajib *'); 
     const res = await createUserWithEmailAndPassword(auth, form.email, form.pass); 
-    await setDoc(doc(db, "users", res.user.uid), { nama: form.nama, email: form.email, isMember: false, status: 'aktif', tipe: 'pengunjung', umur: form.umur, bidangStudi: form.bidang, domisili: form.domisili, kelamin: form.kelamin, following: [], followers: [], createdAt: serverTimestamp() }); 
+    await setDoc(doc(db, "users", res.user.uid), { 
+      nama: form.nama, 
+      email: form.email, 
+      isMember: isMember,
+      status: 'aktif', 
+      tipe: isMember ? 'admin' : 'pengunjung', 
+      umur: form.umur, 
+      bidangStudi: form.bidang, 
+      domisili: form.domisili, 
+      kelamin: form.kelamin, 
+      following: [], 
+      followers: [], 
+      createdAt: serverTimestamp() 
+    }); 
     alert('Daftar Berhasil!') 
   } 
+
   return(
     <div className="auth-wrapper">
       <div className="glass-box">
@@ -251,7 +266,10 @@ function DaftarPage({ setPage }) {
         <div className="input-password"><input className="auth-input" placeholder="Password *" type={showPass? "text" : "password"} value={form.pass} onChange={e => setForm({...form, pass: e.target.value})} /><span onClick={() => setShowPass(!showPass)}>{showPass? '🙈' : '👁️'}</span></div>
         <input className="auth-input" placeholder="Umur *" type="number" value={form.umur} onChange={e => setForm({...form, umur: e.target.value})} />
         <input className="auth-input" placeholder="Bidang Studi *" value={form.bidang} onChange={e => setForm({...form, bidang: e.target.value})} />
-        <div className="btn-group"><button className="btn-primary" onClick={daftar}>Daftar Pengunjung</button><button className="btn-disabled" disabled>Daftar Anggota 🔒</button></div>
+        <div className="btn-group">
+          <button className="btn-primary" onClick={() => daftar(false)}>Daftar Pengunjung</button>
+          <button className="btn-admin" onClick={() => daftar(true)}>Daftar Jadi Admin 🔑</button>
+        </div>
         <p className="auth-text">Sudah punya akun? <span className="link" onClick={() => setPage('login')}>Masuk</span></p>
       </div>
     </div>
@@ -261,7 +279,7 @@ function DaftarPage({ setPage }) {
 function PostingPage({ user, userData, setPage }) { 
   const [judul, setJudul] = useState(''); const [text, setText] = useState(''); const [tag, setTag] = useState('Edukasi'); 
   async function posting() { 
-    if(!userData.isMember) return alert('Hanya Anggota yang bisa posting'); 
+    if(!userData.isMember) return alert('Hanya Admin/Anggota yang bisa posting'); 
     if(!judul || !text) return alert('Judul dan isi wajib diisi');
     await addDoc(collection(db, "posts"), { uid: user.uid, judul, text, tag, likes: [], commentCount: 0, createdAt: serverTimestamp() }); 
     alert('Posting Berhasil!'); setPage('beranda') 
@@ -306,10 +324,15 @@ function InboxPage({ notifications, users, avatarUrl, setPage }) {
 }
 
 function AdminPanel({ users, setPage }) { 
+  async function hapusUser(uid) {
+    if(!confirm('Yakin hapus user ini?')) return
+    await deleteDoc(doc(db, "users", uid))
+    alert('User dihapus')
+  }
   return(
     <div className="content">
       <div className="admin-header"><button onClick={() => setPage('beranda')}>←</button><h2>Panel Admin</h2></div>
-      {users.map((u,i) => <div className="admin-card" key={u.id} style={{animationDelay: `${i*0.05}s`}}><img src={`https://ui-avatars.com/api/?name=${u.nama}`} className="post-avatar"/><div><b>{u.nama}</b><p>{u.email} • {u.tipe}</p></div><span className={`status-badge ${u.status}`}>{u.status}</span></div>)}
+      {users.map((u,i) => <div className="admin-card" key={u.id} style={{animationDelay: `${i*0.05}s`}}><img src={`https://ui-avatars.com/api/?name=${u.nama}`} className="post-avatar"/><div><b>{u.nama}</b><p>{u.email} • {u.tipe}</p></div><span className={`status-badge ${u.status}`}>{u.status}</span><button className="btn-delete" onClick={() => hapusUser(u.id)}>🗑️</button></div>)}
     </div>
   )
 }
