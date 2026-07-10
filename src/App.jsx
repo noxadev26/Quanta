@@ -4,13 +4,14 @@ import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWith
 import { getFirestore, collection, query, orderBy, where, getDocs, doc, getDoc, setDoc, addDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, onSnapshot, deleteDoc } from 'firebase/firestore'
 import './App.css'
 
+// CONFIG BARU QUANTA - SSI
 const firebaseConfig = {
-  apiKey: "AIzaSyAQnPtiko5TZ_ydHFty4SoJhVhjV_kVA_E",
-  authDomain: "nalarku-app.firebaseapp.com",
-  projectId: "nalarku-app",
-  storageBucket: "nalarku-app.firebasestorage.app",
-  messagingSenderId: "226783235192",
-  appId: "1:226783235192:web:4ed40d9ac18574636b718d"
+  apiKey: "AIzaSyAjDgzPe8tUNfYEZDsEIrrZlfc8hu9QlXI",
+  authDomain: "quanta---ssi.firebaseapp.com",
+  projectId: "quanta---ssi",
+  storageBucket: "quanta---ssi.firebasestorage.app",
+  messagingSenderId: "153029053903",
+  appId: "1:153029053903:web:86cb0636f901fa6394d6ba"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -353,48 +354,14 @@ function AdminPanel({ users, posts, setPage }) {
   return(
     <div className="content">
       <div className="admin-header"><button onClick={() => setPage('beranda')}>←</button><h2>Panel Admin</h2></div>
-      <input className="auth-input" placeholder="🔍 Cari akun atau postingan..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom: '15px'}}/>
-      <div className="admin-tabs">
-        <button className={`tab-btn ${tab==='akun'?'active':''}`} onClick={() => setTab('akun')}>👤 Akun ({users.length})</button>
-        <button className={`tab-btn ${tab==='post'?'active':''}`} onClick={() => setTab('post')}>📝 Postingan ({posts.length})</button>
-      </div>
-      {tab === 'akun' && (
-        <div className="admin-list">
-          {filteredUsers.length === 0 && <div className="empty-state">Akun tidak ditemukan</div>}
-          {filteredUsers.map((u,i) => (
-            <div className="admin-card" key={u.id} style={{animationDelay: `${i*0.05}s`}}>
-              <img src={`https://ui-avatars.com/api/?name=${u.nama}`} className="post-avatar"/>
-              <div style={{flex: 1}}><b>{u.nama}</b> {u.isMember && <span className="badge-member">Admin</span>}<p>{u.email} • {u.tipe}</p></div>
-              <span className={`status-badge ${u.status}`}>{u.status}</span>
-              <button className="btn-delete" onClick={() => hapusUser(u.id)}>🗑️</button>
-            </div>
-          ))}
-        </div>
-      )}
-      {tab === 'post' && (
-        <div className="admin-list">
-          {filteredPosts.length === 0 && <div className="empty-state">Postingan tidak ditemukan</div>}
-          {filteredPosts.map((p,i) => (
-            <div className="admin-card" key={p.id} style={{animationDelay: `${i*0.05}s`}}>
-              <div style={{flex: 1}}><b>{p.judul}</b><p style={{fontSize: '12px', color: 'var(--muted)'}}>{p.text.substring(0, 60)}...</p><small>❤️ {p.likes?.length || 0} • 💬 {p.comments?.length || 0}</small></div>
-              <button className="btn-delete" onClick={() => hapusPost(p.id)}>🗑️</button>
-            </div>
-          ))}
-        </div>
-      )}
+      <input className="auth-input" placeholder="🔍 Cari akun atau postingan..." value={search} onChange={e => setSearch(e.target.value)} />
+      {/* Isi admin panel kamu di sini */}
     </div>
   )
 }
 
-function SearchPage({ posts, setPage }) { 
-  const [search, setSearch] = useState(''); 
-  const results = posts.filter(p => p.judul.toLowerCase().includes(search.toLowerCase()) || p.text.toLowerCase().includes(search.toLowerCase())); 
-  return(
-    <div className="content">
-      <input className="auth-input" placeholder="Cari postingan..." value={search} onChange={e => setSearch(e.target.value)} />
-      {results.map(p => <div className="post-card" key={p.id}><b>{p.judul}</b><p>{p.text}</p></div>)}
-    </div>
-  )
+function SearchPage({ posts, setPage }) {
+  return <div className="content"><h2>🔍 Halaman Cari</h2></div>
 }
 
 export default App
