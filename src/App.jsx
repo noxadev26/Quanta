@@ -2,47 +2,110 @@ import { useState } from 'react'
 import './App.css'
 
 function App() {
+  const [page, setPage] = useState('beranda') // beranda, posting, profil
+
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white">
-      {/* NAVBAR */}
-      <nav className="border-b border-slate-800 p-4 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-cyan-400">QUANTA</h1>
-        <div className="flex gap-3">
-          <button className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700">Masuk</button>
-          <button className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600">Daftar</button>
-        </div>
-      </nav>
+    <div className="app-container">
+      {/* HEADER */}
+      <div className="header">
+        <h1>QUANTA</h1>
+        <button className="setting-btn">⚙️</button>
+      </div>
 
-      {/* HERO */}
-      <section className="text-center py-20 px-4">
-        <h2 className="text-5xl font-bold mb-4">Berbagi Ilmu Bareng Komunitas SSI</h2>
-        <p className="text-slate-400 mb-8">Pengunjung bisa baca. Anggota bisa nulis & terverifikasi.</p>
-        <button className="px-6 py-3 bg-cyan-500 rounded-lg font-semibold">Gabung Jadi Anggota</button>
-      </section>
+      {/* BACKGROUND HEADER */}
+      <div className="header-bg"></div>
 
-      {/* FEED MATERI */}
-      <section className="max-w-3xl mx-auto px-4 pb-20">
-        <h3 className="text-2xl font-bold mb-6">Materi Terbaru</h3>
-        
-        {/* CONTOH POSTINGAN ANGGOTA */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-4">
-          <div className="flex items-center gap-3 mb-3">
-            <img src="https://i.pravatar.cc/40" className="rounded-full"/>
-            <div>
-              <p className="font-semibold">Budi SSI <span className="text-xs bg-cyan-500 px-2 py-0.5 rounded">Anggota</span></p>
+      {/* CONTENT */}
+      {page === 'beranda' && (
+        <div className="feed">
+          {/* POST 1 - ANGGOTA */}
+          <div className="post-card">
+            <div className="post-header">
+              <img src="https://i.pravatar.cc/40" />
+              <div>
+                <p className="post-name">Budi <span className="badge">Anggota</span></p>
+                <p className="post-time">Baru saja</p>
+              </div>
+            </div>
+            <h3 className="post-title">Tips Belajar Coding</h3>
+            <p className="post-desc">Mulai dari HTML CSS dulu ya guys, jangan langsung React</p>
+            <div className="post-actions">
+              <button>❤️ 0</button>
+              <button>💬 Komen</button>
             </div>
           </div>
-          <h4 className="text-xl font-bold mb-2">Cara Cepat Belajar React</h4>
-          <p className="text-slate-400">Ini tips dari anggota SSI yang udah terverifikasi...</p>
-        </div>
 
-        {/* CONTOH POSTINGAN PENGUNJUNG MENUNGGU */}
-        <div className="bg-slate-900 border-yellow-500 rounded-xl p-5 mb-4 opacity-70">
-          <p className="text-xs text-yellow-400 mb-2">⏳ Menunggu Verifikasi Admin</p>
-          <h4 className="text-xl font-bold">Tutorial GitHub</h4>
+          {/* POST 2 - PENGUNJUNG NUNGGU VERIFIKASI */}
+          <div className="post-card pending">
+            <p className="pending-text">⏳ Menunggu Verifikasi Admin</p>
+            <div className="post-header">
+              <img src="https://i.pravatar.cc/41" />
+              <div>
+                <p className="post-name">Pengunjung123</p>
+                <p className="post-time">5 menit lalu</p>
+              </div>
+            </div>
+            <h3 className="post-title">undefined</h3>
+            <p className="post-desc">Ini postingan test</p>
+            <div className="post-actions">
+              <button>❤️ 0</button>
+              <button>💬 Komen</button>
+            </div>
+          </div>
         </div>
+      )}
 
-      </section>
+      {page === 'posting' && (
+        <div className="posting-page">
+          <h2>Buat Postingan</h2>
+          <div className="form-group">
+            <label>Kategori</label>
+            <select>
+              <option>🧠 Edukasi</option>
+              <option>👥 Sosial</option>
+              <option>💻 Teknologi</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Judul Postingan</label>
+            <input type="text" placeholder="Judul postingan..." />
+          </div>
+          <div className="form-group">
+            <label>Thumbnail</label>
+            <div className="upload-box">📷 Klik untuk upload gambar</div>
+          </div>
+          <div className="form-group">
+            <label>Isi Postingan</label>
+            <textarea rows="5" placeholder="Tulis materimu disini..."></textarea>
+          </div>
+          <button className="btn-post">Posting Sekarang</button>
+        </div>
+      )}
+
+      {page === 'profil' && (
+        <div className="profil-page">
+          <h2>← Profil</h2>
+          <img className="profil-pic" src="https://i.pravatar.cc/100?u=yaegar" />
+          <h3>Yaegar</h3>
+          <div className="profil-stats">
+            <div><b>0</b><p>Post</p></div>
+            <div><b>0</b><p>Pengikut</p></div>
+            <div><b>0</b><p>Mengikuti</p></div>
+          </div>
+          <button className="btn-ikuti">Ikuti</button>
+          <h4>Postingan</h4>
+          <p>Loading...</p>
+        </div>
+      )}
+
+      {/* NAVBAR BAWAH */}
+      <div className="navbar">
+        <button onClick={() => setPage('beranda')}>🏠<span>Beranda</span></button>
+        <button>🔍<span>Cari</span></button>
+        <button onClick={() => setPage('posting')}>➕<span>Posting</span></button>
+        <button>📥<span>Kotak Masuk <b className="notif">3</b></span></button>
+        <button onClick={() => setPage('profil')}>👤<span>Profil</span></button>
+      </div>
     </div>
   )
 }
