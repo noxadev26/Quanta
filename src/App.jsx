@@ -35,7 +35,7 @@ function App() {
         const userDoc = await getDoc(doc(db, "users", u.uid))
         const data = userDoc.data()
         setUserData(data)
-        setIsAdmin(data?.isMember === true) // Admin = isMember true
+        setIsAdmin(data?.isMember === true)
         setTimeout(() => { setPage('beranda') }, 500)
 
         onSnapshot(query(collection(db, "posts"), orderBy("createdAt", "desc")), async (snap) => {
@@ -126,7 +126,7 @@ function App() {
           {page === 'posting' && <PostingPage user={user} userData={userData} setPage={setPage} />}
           {page === 'profil' && <ProfilPage user={user} userData={userData} setPage={setPage} avatarUrl={avatarUrl} />}
           {page === 'inbox' && <InboxPage notifications={notifications} users={users} avatarUrl={avatarUrl} setPage={setPage} />}
-          {page === 'admin' && isAdmin && <AdminPanel users={users} setPage={setPage} />}
+          {page === 'admin' && isAdmin && <AdminPanel users={users} posts={posts} setPage={setPage} />}
           {page === 'cari' && <SearchPage posts={posts} setPage={setPage} />}
 
           <div className="navbar">
@@ -170,7 +170,7 @@ function BerandaPage({ posts, user, userData, users, toggleLike, addComment, ava
           <div className="post-header">
             <img src={avatarUrl(p.authorData?.nama)} className="post-avatar" onClick={() => goToProfile(p.uid)} />
             <div className="post-userinfo">
-              <div className="post-author" onClick={() => goToProfile(p.uid)}>{p.authorData?.nama || 'User'} {p.authorData?.isMember && <span className="badge-member">Anggota</span>}</div>
+              <div className="post-author" onClick={() => goToProfile(p.uid)}>{p.authorData?.nama || 'User'} {p.authorData?.isMember && <span className="badge-member">Admin</span>}</div>
               <div className="post-time">Baru saja</div>
             </div>
           </div>
@@ -240,18 +240,9 @@ function DaftarPage({ setPage }) {
     if(!form.nama || !form.email || !form.pass) return alert('Isi semua data wajib *'); 
     const res = await createUserWithEmailAndPassword(auth, form.email, form.pass); 
     await setDoc(doc(db, "users", res.user.uid), { 
-      nama: form.nama, 
-      email: form.email, 
-      isMember: isMember,
-      status: 'aktif', 
-      tipe: isMember ? 'admin' : 'pengunjung', 
-      umur: form.umur, 
-      bidangStudi: form.bidang, 
-      domisili: form.domisili, 
-      kelamin: form.kelamin, 
-      following: [], 
-      followers: [], 
-      createdAt: serverTimestamp() 
+      nama: form.nama, email: form.email, isMember: isMember, status: 'aktif', 
+      tipe: isMember ? 'admin' : 'pengunjung', umur: form.umur, bidangStudi: form.bidang, 
+      domisili: form.domisili, kelamin: form.kelamin, following: [], followers: [], createdAt: serverTimestamp() 
     }); 
     alert('Daftar Berhasil!') 
   } 
@@ -323,16 +314,57 @@ function InboxPage({ notifications, users, avatarUrl, setPage }) {
   )
 }
 
-function AdminPanel({ users, setPage }) { 
+function AdminPanel({ users, posts, setPage }) { 
+  const [tab, setTab] = useState('akun')
+  const [search, setSearch] = useState('')
+
   async function hapusUser(uid) {
     if(!confirm('Yakin hapus user ini?')) return
     await deleteDoc(doc(db, "users", uid))
     alert('User dihapus')
   }
+
+  async function hapusPost(postId) {
+    if(!confirm('Yakin hapus postingan ini?')) return
+    await deleteDoc(doc(db, "posts", postId))
+    alert('Postingan dihapus')
+  }
+
+  const filteredUsers = users.filter(u => u.nama?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()))
+  const filteredPosts = posts.filter(p => p.judul?.toLowerCase().includes(search.toLowerCase()) || p.text?.toLowerCase().includes(search.toLowerCase()))
+
   return(
     <div className="content">
       <div className="admin-header"><button onClick={() => setPage('beranda')}>←</button><h2>Panel Admin</h2></div>
-      {users.map((u,i) => <div className="admin-card" key={u.id} style={{animationDelay: `${i*0.05}s`}}><img src={`https://ui-avatars.com/api/?name=${u.nama}`} className="post-avatar"/><div><b>{u.nama}</b><p>{u.email} • {u.tipe}</p></div><span className={`status-badge ${u.status}`}>{u.status}</span><button className="btn-delete" onClick={() => hapusUser(u.id)}>🗑️</button></div>)}
+      <input className="auth-input" placeholder="🔍 Cari akun atau postingan..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom: '15px'}}/>
+      <div className="admin-tabs">
+        <button className={`tab-btn ${tab==='akun'?'active':''}`} onClick={() => setTab('akun')}>👤 Akun ({users.length})</button>
+        <button className={`tab-btn ${tab==='post'?'active':''}`} onClick={() => setTab('post')}>📝 Postingan ({posts.length})</button>
+      </div>
+      {tab === 'akun' && (
+        <div className="admin-list">
+          {filteredUsers.length === 0 && <div className="empty-state">Akun tidak ditemukan</div>}
+          {filteredUsers.map((u,i) => (
+            <div className="admin-card" key={u.id} style={{animationDelay: `${i*0.05}s`}}>
+              <img src={`https://ui-avatars.com/api/?name=${u.nama}`} className="post-avatar"/>
+              <div style={{flex: 1}}><b>{u.nama}</b> {u.isMember && <span className="badge-member">Admin</span>}<p>{u.email} • {u.tipe}</p></div>
+              <span className={`status-badge ${u.status}`}>{u.status}</span>
+              <button className="btn-delete" onClick={() => hapusUser(u.id)}>🗑️</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {tab === 'post' && (
+        <div className="admin-list">
+          {filteredPosts.length === 0 && <div className="empty-state">Postingan tidak ditemukan</div>}
+          {filteredPosts.map((p,i) => (
+            <div className="admin-card" key={p.id} style={{animationDelay: `${i*0.05}s`}}>
+              <div style={{flex: 1}}><b>{p.judul}</b><p style={{fontSize: '12px', color: 'var(--muted)'}}>{p.text.substring(0, 60)}...</p><small>❤️ {p.likes?.length || 0} • 💬 {p.comments?.length || 0}</small></div>
+              <button className="btn-delete" onClick={() => hapusPost(p.id)}>🗑️</button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
