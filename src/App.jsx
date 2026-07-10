@@ -112,7 +112,7 @@ function App() {
         <>
           {page!== 'profil' && page!== 'profilOrang' && (
             <div className="header">
-              <div className="logo" onClick={() => setPage('beranda')}>QUANTA<span>SSI</span></div>
+              <div className="logo" onClick={() => setPage('beranda')}>Quanta <span>• made by SSI</span></div>
               <div className="header-right">
                 {notifications.filter(n =>!n.read).length > 0 && <span className="notif-badge">{notifications.filter(n =>!n.read).length}</span>}
                 <button className="icon-btn" onClick={() => setPage('inbox')}>🔔</button>
@@ -124,7 +124,7 @@ function App() {
           {page === 'beranda' && <BerandaPage posts={posts} user={user} userData={userData} users={users} toggleLike={toggleLike} addComment={addComment} avatarUrl={avatarUrl} setPage={setPage} setSelectedProfile={setSelectedProfile} />}
           {page === 'profilOrang' && <ProfilOrangPage uid={selectedProfile} users={users} posts={posts} user={user} userData={userData} toggleFollow={toggleFollow} avatarUrl={avatarUrl} setPage={setPage} />}
           {page === 'posting' && <PostingPage user={user} userData={userData} setPage={setPage} />}
-          {page === 'profil' && <ProfilPage user={user} userData={userData} setPage={setPage} avatarUrl={avatarUrl} />}
+          {page === 'profil' && <ProfilPage user={user} userData={userData} posts={posts} setPage={setPage} avatarUrl={avatarUrl} />}
           {page === 'inbox' && <InboxPage notifications={notifications} users={users} avatarUrl={avatarUrl} setPage={setPage} />}
           {page === 'admin' && isAdmin && <AdminPanel users={users} posts={posts} setPage={setPage} />}
           {page === 'cari' && <SearchPage posts={posts} setPage={setPage} />}
@@ -197,6 +197,7 @@ function BerandaPage({ posts, user, userData, users, toggleLike, addComment, ava
 function ProfilOrangPage({ uid, users, posts, user, userData, toggleFollow, avatarUrl, setPage }) {
   const profileUser = users.find(u => u.id === uid)
   const userPosts = posts.filter(p => p.uid === uid)
+  const totalLikes = userPosts.reduce((sum, p) => sum + (p.likes?.length || 0), 0)
   const isFollowing = userData.following?.includes(uid)
   if(!profileUser) return null
   return(
@@ -207,11 +208,17 @@ function ProfilOrangPage({ uid, users, posts, user, userData, toggleFollow, avat
         <h3>{profileUser.nama}</h3>
         <p className="profil-status">{profileUser.tipe}</p>
         <p className="profil-detail">{profileUser.bidangStudi} • {profileUser.umur} th • {profileUser.domisili}</p>
-        <div className="profil-stats"><div><b>{profileUser.followers?.length||0}</b><p>Followers</p></div><div><b>{profileUser.following?.length||0}</b><p>Following</p></div><div><b>{userPosts.length}</b><p>Post</p></div></div>
+        <div className="profil-stats">
+          <div><b>{profileUser.followers?.length||0}</b><p>Followers</p></div>
+          <div><b>{profileUser.following?.length||0}</b><p>Following</p></div>
+          <div><b>{userPosts.length}</b><p>Post</p></div>
+          <div><b>{totalLikes}</b><p>Likes</p></div>
+        </div>
         {user.uid!== uid && <button className={`btn-follow ${isFollowing?'following':''}`} onClick={() => toggleFollow(uid)}>{isFollowing? 'Following' : 'Follow'}</button>}
       </div>
       <h4 className="section-title">Postingan</h4>
-      {userPosts.map(p => <div className="post-card" key={p.id}><b>{p.judul}</b><p>{p.text}</p></div>)}
+      {userPosts.length === 0 && <div className="empty-state">Belum ada postingan</div>}
+      {userPosts.map(p => <div className="post-card" key={p.id}><b>{p.judul}</b><p>{p.text}</p><small>❤️ {p.likes?.length || 0}</small></div>)}
     </div>
   )
 }
@@ -288,7 +295,9 @@ function PostingPage({ user, userData, setPage }) {
   )
 }
 
-function ProfilPage({ user, userData, setPage, avatarUrl }) { 
+function ProfilPage({ user, userData, posts, setPage, avatarUrl }) { 
+  const userPosts = posts.filter(p => p.uid === user.uid)
+  const totalLikes = userPosts.reduce((sum, p) => sum + (p.likes?.length || 0), 0)
   return(
     <div className="profil-page">
       <div className="profil-header"><button onClick={() => setPage('beranda')}>←</button><h2>Profil Saya</h2></div>
@@ -297,9 +306,17 @@ function ProfilPage({ user, userData, setPage, avatarUrl }) {
         <h3>{userData?.nama}</h3>
         <p className="profil-status">{userData?.tipe}</p>
         <p className="profil-detail">{userData?.bidangStudi} • {userData?.umur} th</p>
-        <div className="profil-stats"><div><b>{userData?.followers?.length||0}</b><p>Followers</p></div><div><b>{userData?.following?.length||0}</b><p>Following</p></div></div>
+        <div className="profil-stats">
+          <div><b>{userData?.followers?.length||0}</b><p>Followers</p></div>
+          <div><b>{userData?.following?.length||0}</b><p>Following</p></div>
+          <div><b>{userPosts.length}</b><p>Post</p></div>
+          <div><b>{totalLikes}</b><p>Likes</p></div>
+        </div>
         <button className="btn-logout" onClick={() => signOut(auth)}>Keluar</button>
       </div>
+      <h4 className="section-title">Postingan Saya</h4>
+      {userPosts.length === 0 && <div className="empty-state">Kamu belum posting</div>}
+      {userPosts.map(p => <div className="post-card" key={p.id}><b>{p.judul}</b><p>{p.text}</p><small>❤️ {p.likes?.length || 0}</small></div>)}
     </div>
   )
 }
@@ -307,7 +324,7 @@ function ProfilPage({ user, userData, setPage, avatarUrl }) {
 function InboxPage({ notifications, users, avatarUrl, setPage }) { 
   return(
     <div className="content">
-      <h2 className="section-title">Notifikasi</h2>
+      <div className="profil-header"><button onClick={() => setPage('beranda')}>←</button><h2>Notifikasi</h2></div>
       {notifications.length === 0 && <div className="empty-state">Belum ada notifikasi</div>}
       {notifications.map((n,i) => <div className="notif-card" key={n.id} style={{animationDelay: `${i*0.05}s`}}><img src={avatarUrl(users.find(u=>u.id===n.from)?.nama)} className="post-avatar"/><p><b>{users.find(u=>u.id===n.from)?.nama}</b> {n.text}</p></div>)}
     </div>
