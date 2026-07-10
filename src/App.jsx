@@ -1,111 +1,124 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { initializeApp } from 'firebase/app'
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth'
+import { getFirestore, collection, query, orderBy, getDocs, doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore'
 import './App.css'
 
+// CONFIG FIREBASE KAMU
+const firebaseConfig = {
+  apiKey: "AIzaSyAQnPtiko5TZ_ydHFty4SoJhVhjV_kVA_E",
+  authDomain: "nalarku-app.firebaseapp.com",
+  projectId: "nalarku-app",
+  storageBucket: "nalarku-app.firebasestorage.app",
+  messagingSenderId: "226783235192",
+  appId: "1:226783235192:web:4ed40d9ac18574636b718d"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 function App() {
-  const [page, setPage] = useState('beranda') // beranda, posting, profil
+  const [user, setUser] = useState(null)
+  const [posts, setPosts] = useState([])
+  const [isMember, setIsMember] = useState(false)
+
+  useEffect(() => {
+    onAuthStateChanged(auth, async (u) => {
+      if(u) {
+        setUser(u)
+        const userDoc = await getDoc(doc(db, "users", u.uid))
+        if(userDoc.exists()) {
+          setIsMember(userDoc.data().isMember || false) // INI KUNCINYA: CEK ANGGOTA
+        }
+        loadPosts()
+      } else {
+        setUser(null)
+      }
+    })
+  }, [])
+
+  async function loadPosts() {
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"))
+    const snap = await getDocs(q)
+    const data = []
+    for(const docSnap of snap.docs) {
+      const p = docSnap.data()
+      const authorDoc = await getDoc(doc(db, "users", p.uid))
+      data.push({ id: docSnap.id, ...p, authorData: authorDoc.data() })
+    }
+    setPosts(data)
+  }
+
+  function avatarUrl(data) {
+    const nama = data?.nama || 'U'
+    return `https://ui-avatars.com/api/?name=${nama}&background=6366f1&color=fff&size=40`
+  }
+
+  if(!user) return <LoginPage />
 
   return (
-    <div className="app-container">
-      {/* HEADER */}
+    <div className="container">
       <div className="header">
-        <h1>QUANTA</h1>
-        <button className="setting-btn">⚙️</button>
+        <div className="logo">QUANTA<span>SSI</span></div>
+        <button className="icon-btn" onClick={() => signOut(auth)}>⚙️</button>
       </div>
 
-      {/* BACKGROUND HEADER */}
-      <div className="header-bg"></div>
+      <div className="content">
+        {posts.length === 0 ? <p className="loading">Loading postingan...</p> : 
+          posts.map(p => (
+            <div className="post-card" key={p.id}>
+              <div className="post-header">
+                <img src={avatarUrl(p.authorData)} className="post-avatar" />
+                <div className="post-userinfo">
+                  <div className="post-author">
+                    {p.authorData?.nama || 'User'} 
+                    {p.authorData?.isMember && <span className="badge-member">Anggota</span>}
+                  </div>
+                  <div className="post-time">Baru saja</div>
+                </div>
+              </div>
 
-      {/* CONTENT */}
-      {page === 'beranda' && (
-        <div className="feed">
-          {/* POST 1 - ANGGOTA */}
-          <div className="post-card">
-            <div className="post-header">
-              <img src="https://i.pravatar.cc/40" />
-              <div>
-                <p className="post-name">Budi <span className="badge">Anggota</span></p>
-                <p className="post-time">Baru saja</p>
+              {/* KALAU PENGUNJUNG POSTING KASIH TANDA */}
+              {!p.authorData?.isMember && <span className="post-tag pending">⏳ Menunggu Verifikasi</span>}
+              {p.authorData?.isMember && <span className="post-tag">{p.tag || 'Edukasi'}</span>}
+              
+              <div className="post-title">{p.judul}</div>
+              {p.imageUrl && <img src={p.imageUrl} className="post-image" />}
+              <div className="post-text">{p.text}</div>
+
+              <div className="post-actions">
+                <button className="action-btn">🤍 {p.likes?.length || 0}</button>
+                <button className="action-btn">💬 {p.commentCount || 0}</button>
               </div>
             </div>
-            <h3 className="post-title">Tips Belajar Coding</h3>
-            <p className="post-desc">Mulai dari HTML CSS dulu ya guys, jangan langsung React</p>
-            <div className="post-actions">
-              <button>❤️ 0</button>
-              <button>💬 Komen</button>
-            </div>
-          </div>
+          ))
+        }
+      </div>
 
-          {/* POST 2 - PENGUNJUNG NUNGGU VERIFIKASI */}
-          <div className="post-card pending">
-            <p className="pending-text">⏳ Menunggu Verifikasi Admin</p>
-            <div className="post-header">
-              <img src="https://i.pravatar.cc/41" />
-              <div>
-                <p className="post-name">Pengunjung123</p>
-                <p className="post-time">5 menit lalu</p>
-              </div>
-            </div>
-            <h3 className="post-title">undefined</h3>
-            <p className="post-desc">Ini postingan test</p>
-            <div className="post-actions">
-              <button>❤️ 0</button>
-              <button>💬 Komen</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {page === 'posting' && (
-        <div className="posting-page">
-          <h2>Buat Postingan</h2>
-          <div className="form-group">
-            <label>Kategori</label>
-            <select>
-              <option>🧠 Edukasi</option>
-              <option>👥 Sosial</option>
-              <option>💻 Teknologi</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Judul Postingan</label>
-            <input type="text" placeholder="Judul postingan..." />
-          </div>
-          <div className="form-group">
-            <label>Thumbnail</label>
-            <div className="upload-box">📷 Klik untuk upload gambar</div>
-          </div>
-          <div className="form-group">
-            <label>Isi Postingan</label>
-            <textarea rows="5" placeholder="Tulis materimu disini..."></textarea>
-          </div>
-          <button className="btn-post">Posting Sekarang</button>
-        </div>
-      )}
-
-      {page === 'profil' && (
-        <div className="profil-page">
-          <h2>← Profil</h2>
-          <img className="profil-pic" src="https://i.pravatar.cc/100?u=yaegar" />
-          <h3>Yaegar</h3>
-          <div className="profil-stats">
-            <div><b>0</b><p>Post</p></div>
-            <div><b>0</b><p>Pengikut</p></div>
-            <div><b>0</b><p>Mengikuti</p></div>
-          </div>
-          <button className="btn-ikuti">Ikuti</button>
-          <h4>Postingan</h4>
-          <p>Loading...</p>
-        </div>
-      )}
-
-      {/* NAVBAR BAWAH */}
+      {/* NAVBAR BAWAH SAMA PERSIS */}
       <div className="navbar">
-        <button onClick={() => setPage('beranda')}>🏠<span>Beranda</span></button>
-        <button>🔍<span>Cari</span></button>
-        <button onClick={() => setPage('posting')}>➕<span>Posting</span></button>
-        <button>📥<span>Kotak Masuk <b className="notif">3</b></span></button>
-        <button onClick={() => setPage('profil')}>👤<span>Profil</span></button>
+        <a href="#" className="nav-item active">🏠<br/>Home</a>
+        <a href="#" className="nav-item">🔍<br/>Cari</a>
+        <a href="#" className="nav-item">➕<br/>Post</a>
+        <a href="#" className="nav-item">💬<br/>Chat</a>
+        <a href="#" className="nav-item">👤<br/>Profil</a>
       </div>
+    </div>
+  )
+}
+
+function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [pass, setPass] = useState('')
+  return (
+    <div className="login-page">
+      <h1>QUANTA <span>SSI</span></h1>
+      <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
+      <input placeholder="Password" type="password" value={pass} onChange={e => setPass(e.target.value)} />
+      <button onClick={() => signInWithEmailAndPassword(auth, email, pass)}>Masuk</button>
+      <button onClick={() => createUserWithEmailAndPassword(auth, email, pass)}>Daftar Pengunjung</button>
+      <p>*Daftar sebagai Anggota wajib join grup SSI dulu</p>
     </div>
   )
 }
