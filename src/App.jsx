@@ -35,9 +35,11 @@ function App() {
         const data = userDoc.data()
         setUserData(data)
         setIsAdmin(u.uid === ADMIN_UID)
-        setPage('beranda')
-        loadPosts()
-        if(u.uid === ADMIN_UID) loadUsers()
+        setTimeout(() => { // delay biar animasi masuk
+          setPage('beranda')
+          loadPosts()
+          if(u.uid === ADMIN_UID) loadUsers()
+        }, 300)
       } else {
         setUser(null)
         setPage('login')
@@ -75,7 +77,7 @@ function App() {
     loadPosts()
   }
 
-  if(loading) return <div className="loading-full">Loading...</div>
+  if(loading) return <div className="loading-full"><div className="loader"></div></div>
 
   return (
     <div className="container">
@@ -95,8 +97,8 @@ function App() {
           {page === 'beranda' && (
             <div className="content">
               <div className="banner"></div>
-              {posts.map(p => (
-                <div className="post-card" key={p.id}>
+              {posts.map((p, i) => (
+                <div className="post-card" key={p.id} style={{animationDelay: `${i * 0.1}s`}}>
                   <div className="post-header">
                     <img src={avatarUrl(p.authorData?.nama)} className="post-avatar" />
                     <div className="post-userinfo">
@@ -155,7 +157,7 @@ function LoginPage({ setPage }) {
           <input className="auth-input" placeholder="Password" type={showPass ? "text" : "password"} value={pass} onChange={e => setPass(e.target.value)} />
           <span onClick={() => setShowPass(!showPass)}>{showPass ? '🙈' : '👁️'}</span>
         </div>
-        <button className="btn-primary" onClick={() => signInWithEmailAndPassword(auth, email, pass)}>Masuk</button>
+        <button className="btn-primary">Masuk</button>
         <p className="auth-text">Belum punya akun? <span className="link" onClick={() => setPage('daftar')}>Daftar disini</span></p>
       </div>
     </div>
