@@ -1,70 +1,31 @@
-body {
-  margin: 0;
-  background: #0a1020;
-  color: white;
-  font-family: 'Inter', sans-serif;
-}
+:root { --bg: #0b1120; --card: #111827; --accent: #6366f1; --text: #e5e7eb; --muted: #9ca3af; --border: #1f2937; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+.header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; }
+.logo { font-size: 20px; font-weight: 700; }
+.logo span { color: var(--accent); }
+.icon-btn { background: var(--card); border: 1px solid var(--border); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 18px; color: var(--text); }
+.content { padding: 16px; }
+.post-card { background: var(--card); padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+.post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.post-avatar { width: 40px; height: 40px; border-radius: 50%; }
+.post-userinfo { flex: 1; }
+.post-author { font-weight: 600; font-size: 14px; display: flex; gap: 6px; align-items: center; }
+.badge-member { background: var(--accent); color: white; padding: 2px 8px; border-radius: 20px; font-size: 10px; }
+.post-time { font-size: 12px; color: var(--muted); }
+.post-tag { background: var(--border); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; margin-bottom: 8px; }
+.post-tag.pending { background: #facc15; color: #000; }
+.post-title { font-size: 16px; font-weight: 600; margin: 8px 0 4px; }
+.post-text { font-size: 14px; color: var(--muted); }
+.post-image { width: 100%; border-radius: 12px; margin: 10px 0; object-fit: cover; max-height: 400px; }
+.post-actions { display: flex; align-items: center; gap: 18px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.action-btn { background: none; border: none; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; }
+.navbar { background: var(--card); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--border); position: fixed; bottom: 0; width: 100%; left: 0; }
+.nav-item { text-align: center; font-size: 12px; color: var(--muted); text-decoration: none; }
+.nav-item.active { color: var(--accent); font-weight: 600; }
+.loading { text-align: center; color: var(--muted); padding: 40px; }
 
-.app-container {
-  padding-bottom: 80px;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  padding: 15px;
-  background: rgba(0,0,0,0.3);
-  backdrop-filter: blur(10px);
-  position: fixed;
-  width: 100%;
-  top: 0;
-  z-index: 10;
-}
-.header h1 { color: #3b82f6; }
-.setting-btn { background: #1e293b; border: none; padding: 8px 12px; border-radius: 10px; }
-
-.header-bg {
-  height: 150px;
-  background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb') center/cover;
-}
-
-.feed { padding: 15px; margin-top: 10px; }
-
-.post-card {
-  background: #1e293b;
-  border-radius: 15px;
-  padding: 15px;
-  margin-bottom: 15px;
-}
-.post-card.pending { opacity: 0.6; border: 1px solid #facc15; }
-.pending-text { color: #facc15; font-size: 12px; }
-.post-header { display: flex; gap: 10px; align-items: center; }
-.post-header img { border-radius: 50%; }
-.badge { background: #3b82f6; font-size: 10px; padding: 2px 6px; border-radius: 5px; }
-.post-actions { display: flex; gap: 10px; margin-top: 10px; }
-.post-actions button { background: #334155; border: none; color: white; padding: 8px 12px; border-radius: 10px; }
-
-.posting-page, .profil-page { padding: 20px; }
-.form-group { margin-bottom: 15px; }
-.form-group input, .form-group select, .form-group textarea {
-  width: 100%; background: #1e293b; border: none; color: white; padding: 12px; border-radius: 10px;
-}
-.upload-box { border: 2px dashed #475569; padding: 30px; text-align: center; border-radius: 10px; }
-.btn-post, .btn-ikuti { width: 100%; background: #3b82f6; border: none; padding: 12px; border-radius: 10px; color: white; font-weight: bold; }
-
-.profil-pic { width: 100px; height: 100px; border-radius: 50%; display: block; margin: 0 auto; }
-.profil-stats { display: flex; justify-content: space-around; margin: 15px 0; }
-
-.navbar {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: #1e293b;
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-  border-top: 1px solid #334155;
-}
-.navbar button { background: none; border: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; font-size: 12px; }
-.navbar button:hover { color: #3b82f6; }
-.notif { background: red; border-radius: 50%; padding: 2px 6px; font-size: 10px; }
+.login-page { padding: 40px 20px; text-align: center; }
+.login-page h1 { color: var(--accent); margin-bottom: 20px; }
+.login-page input { width: 100%; padding: 12px; margin-bottom: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); }
+.login-page button { width: 100%; padding: 12px; margin-bottom: 10px; background: var(--accent); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; }
