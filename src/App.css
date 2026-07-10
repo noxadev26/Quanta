@@ -75,3 +75,13 @@ body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
 .admin-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 10px; animation: fadeIn 0.4s ease-out; }
 .btn-verif { background: #22c55e; border: none; padding: 8px 12px; border-radius: 8px; color: white; font-size: 12px; transition: all 0.3s; }
 .btn-verif:hover { transform: scale(1.05); }
+.post-avatar, .post-author { cursor: pointer; }
+.comment-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.comment-item { font-size: 13px; margin-bottom: 6px; }
+.comment-input { display: flex; gap: 8px; margin-top: 8px; }
+.comment-input input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 20px; padding: 8px 12px; color: var(--text); }
+.comment-input button { background: var(--accent); border: none; color: white; padding: 0 12px; border-radius: 20px; }
+.profil-stats { color: var(--muted); font-size: 14px; margin: 5px 0 10px; }
+.btn-follow { background: var(--accent); border: none; padding: 8px 20px; border-radius: 20px; color: white; font-weight: 600; cursor: pointer; }
+.btn-follow.following { background: var(--border); color: var(--text); }
+.story-item { cursor: pointer; }
