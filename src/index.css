@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: linear-gradient(135deg, #001f3f 0%, #003366 50%, #001a33 100%);
+  min-height: 100vh;
+  font-family: system-ui;
+}
+
+.glass {
+  background: rgba(0, 102, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 102, 255, 0.2);
+}
