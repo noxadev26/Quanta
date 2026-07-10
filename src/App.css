@@ -1,10 +1,20 @@
 :root { --bg: #0b1120; --card: #111827; --accent: #6366f1; --text: #e5e7eb; --muted: #9ca3af; --border: #1f2937; }
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+
+.container { max-width: 500px; margin: 0 auto; }
+.loading-full { display: flex; justify-content: center; align-items: center; height: 100vh; }
+
+/* HEADER */
 .header { padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 10; }
 .logo { font-size: 20px; font-weight: 700; }
 .logo span { color: var(--accent); }
 .icon-btn { background: var(--card); border: 1px solid var(--border); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 18px; color: var(--text); }
+
+/* BANNER */
+.banner { height: 160px; background: url('https://images.unsplash.com/photo-1501854140801-50d01698950b?q=80&w=1200') center/cover; margin: 16px; border-radius: 15px; }
+
+/* CONTENT */
 .content { padding: 16px; }
 .post-card { background: var(--card); padding: 16px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
 .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -20,12 +30,32 @@ body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
 .post-image { width: 100%; border-radius: 12px; margin: 10px 0; object-fit: cover; max-height: 400px; }
 .post-actions { display: flex; align-items: center; gap: 18px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 .action-btn { background: none; border: none; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer; }
-.navbar { background: var(--card); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--border); position: fixed; bottom: 0; width: 100%; left: 0; }
-.nav-item { text-align: center; font-size: 12px; color: var(--muted); text-decoration: none; }
+.action-btn.liked { color: #ef4444; }
+
+/* AUTH PAGE */
+.auth-page { padding: 40px 20px; text-align: center; max-width: 400px; margin: 0 auto; }
+.auth-page h1 { color: var(--accent); margin-bottom: 10px; }
+.auth-page input, .input-select, textarea { width: 100%; padding: 12px; margin-bottom: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); }
+.btn-primary { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; }
+.link { color: var(--accent); cursor: pointer; }
+.note { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+
+/* POSTING & PROFIL */
+.posting-box { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); }
+.posting-box h2 { text-align: center; color: var(--accent); margin-bottom: 15px; }
+.profil-page { padding: 0; }
+.profil-header { display: flex; align-items: center; gap: 10px; padding: 16px; border-bottom: 1px solid var(--border); }
+.profil-header button { background: none; border: none; color: var(--text); font-size: 20px; }
+.profil-body { text-align: center; padding: 20px; }
+.avatar-big { width: 100px; height: 100px; border-radius: 50%; margin-bottom: 10px; }
+.profil-status { color: var(--muted); }
+.stats { display: flex; justify-content: space-around; margin: 20px 0; }
+.stats b { display: block; font-size: 18px; }
+.stats span { font-size: 12px; color: var(--muted); }
+.btn-logout { background: #ef4444; border: none; padding: 10px 30px; border-radius: 20px; color: white; margin-bottom: 20px; }
+
+/* NAVBAR */
+.navbar { background: var(--card); display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--border); position: fixed; bottom: 0; width: 100%; left: 0; max-width: 500px; margin: 0 auto; }
+.nav-item { background: none; border: none; text-align: center; font-size: 12px; color: var(--muted); }
 .nav-item.active { color: var(--accent); font-weight: 600; }
 .loading { text-align: center; color: var(--muted); padding: 40px; }
-
-.login-page { padding: 40px 20px; text-align: center; }
-.login-page h1 { color: var(--accent); margin-bottom: 20px; }
-.login-page input { width: 100%; padding: 12px; margin-bottom: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); }
-.login-page button { width: 100%; padding: 12px; margin-bottom: 10px; background: var(--accent); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; }
