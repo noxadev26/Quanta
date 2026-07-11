@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './App.css';
 
 export default function App() {
+  const [showLanding, setShowLanding] = useState(true);
   const [user, setUser] = useState(null);
   const [page, setPage] = useState('home');
   const [isLogin, setIsLogin] = useState(true);
@@ -32,9 +33,14 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [users] = useState([{nama: 'Budi', type: 'anggota'}, {nama: 'Ani', type: 'pengunjung'}, {nama: 'Joko', type: 'anggota'}, {nama: 'Sari', type: 'anggota'}]);
 
-  useEffect(() => { setTimeout(() => setIsLoading(false), 2000); }, []);
-  
-    const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); }
+  useEffect(() => {
+    setTimeout(() => setIsLoading(false), 2000);
+    // AUTO SKIP LANDING KALO DI APK
+    const isApp = window.Capacitor?.isNativePlatform;
+    if (isApp) { setShowLanding(false); }
+  }, []);
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); }
   const generateKodeUnik = () => { const kode = 'QUA-' + Math.random().toString(36).substring(2, 8).toUpperCase(); setKodeGenerated(kode); setAuthForm({...authForm, kodeUnik: kode}); }
   const handleImageUpload = (e) => { const file = e.target.files[0]; if(file) setPostImage(URL.createObjectURL(file)); }
 
@@ -53,9 +59,9 @@ export default function App() {
       setLoading(false);
     }, 1000);
   }
-  
-    const handleLogout = () => {
-    setUser(null); setPage('home');
+
+  const handleLogout = () => {
+    setUser(null); setPage('home'); setShowLanding(true); // BALIK KE LANDING PAS LOGOUT
     setAuthForm({nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: '', kodeUnik: ''});
     setKodeGenerated(''); showToast('Logout berhasil');
   }
@@ -80,9 +86,46 @@ export default function App() {
   }
 
   const handleReset = () => { setPostTitle(''); setPostContent(''); setShowResetConfirm(false); setShowSettingPopup(false); showToast('Form direset'); }
-  
-    if (isLoading) { return (<div className={`loading-screen ${theme} ${mode}`}><div className="loading-logo">QUANTA</div><div className="loading-spinner"></div></div>); }
 
+  // 1. LANDING PAGE DULU KALO DI WEB
+  if (showLanding &&!user) {
+    return (
+      <div className={`landing-container ${theme} ${mode}`}>
+        <nav className="landing-nav">
+          <div className="nav-left"><h1>QUANTA</h1><p>PROJECT</p></div>
+          <div className="nav-right"><button className="btn-nav" onClick={() => setShowLanding(false)}>Masuk</button></div>
+        </nav>
+        <section className="hero">
+          <h1>Platform Edukasi Digital<br/>untuk Anggota SSI</h1>
+          <p>QUANTA adalah ruang kolaborasi profesional. Berbagi materi, diskusi akademik, dan terhubung dengan sesama anggota dalam lingkungan yang terstruktur dan terfokus pada pembelajaran.</p>
+          <div className="hero-buttons">
+            <button className="btn-primary" onClick={() => setShowLanding(false)}>Mulai Bergabung</button>
+            <a href="#fitur" className="btn-secondary">Pelajari Fitur</a>
+          </div>
+        </section>
+        <section id="fitur" className="features">
+          <h2>Standar Profesional. Fokus Edukasi.</h2>
+          <div className="feature-grid">
+            <div className="feature-card"><div className="icon">📝</div><h3>Berbagi Materi</h3><p>Unggah materi edukasi dan ringkasan dengan format yang rapi.</p></div>
+            <div className="feature-card"><div className="icon">💬</div><h3>Diskusi Terarah</h3><p>Kolaborasi dalam forum diskusi yang konstruktif dan relevan.</p></div>
+            <div className="feature-card"><div className="icon">🔒</div><h3>Lingkungan Aman</h3><p>Akses untuk Anggota dan Pengunjung terverifikasi SSI.</p></div>
+          </div>
+        </section>
+        <footer className="landing-footer">
+          <div className="footer-content">
+            <div><h4>QUANTA PROJECT</h4><p>Platform Edukasi Digital SSI</p></div>
+            <div><h4>Kontak</h4><p>Email: support@ssi.org</p></div>
+          </div>
+          <p className="copyright">© 2026 QUANTA by SSI. All rights reserved.</p>
+        </footer>
+      </div>
+    )
+  }
+
+  // 2. LOADING
+  if (isLoading) { return (<div className={`loading-screen ${theme} ${mode}`}><div className="loading-logo">QUANTA</div><div className="loading-spinner"></div></div>); }
+
+  // 3. LOGIN/DAFTAR
   if (!user) {
     return (
       <div className={`auth-wrapper ${theme} ${mode}`}>
@@ -96,7 +139,7 @@ export default function App() {
           <form onSubmit={handleAuth}>
             {!isLogin && (<div className="user-type-selector"><p>Pilih Tipe Akun:</p><div className="type-buttons"><button type="button" className={userType === 'pengunjung'? 'type-active' : ''} onClick={() => setUserType('pengunjung')}>Pengunjung</button><button type="button" className={userType === 'anggota'? 'type-active' : ''} onClick={() => setUserType('anggota')}>Anggota</button></div></div>)}
             {!isLogin && userType === 'anggota' && (<><input type="text" placeholder="Nama Lengkap *" className="auth-input" value={authForm.nama} onChange={e => setAuthForm({...authForm, nama: e.target.value})} required /><input type="email" placeholder="Email *" className="auth-input" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required /><div className="password-wrapper"><input type={showPassword? 'text' : 'password'} placeholder="Password *" className="auth-input" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} required /><span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>{showPassword? '🙈' : '👁️'}</span></div><input type="tel" placeholder="No. WhatsApp *" className="auth-input" value={authForm.wa} onChange={e => setAuthForm({...authForm, wa: e.target.value})} required /><input type="number" placeholder="Umur *" className="auth-input" value={authForm.umur} onChange={e => setAuthForm({...authForm, umur: e.target.value})} required /><input type="text" placeholder="Bidang Studi *" className="auth-input" value={authForm.bidang} onChange={e => setAuthForm({...authForm, bidang: e.target.value})} required /><input type="text" placeholder="Domisili *" className="auth-input" value={authForm.domisili} onChange={e => setAuthForm({...authForm, domisili: e.target.value})} required /><div className="kode-unik-box"><h3>ID Verifikasi Anggota:</h3><button type="button" className="btn-generate" onClick={generateKodeUnik}>Generate ID</button>{kodeGenerated && <div className="kode-hasil">{kodeGenerated}</div>}</div></>)}
-                        {!isLogin && userType === 'pengunjung' && (<><input type="text" placeholder="Nama *" className="auth-input" value={authForm.nama} onChange={e => setAuthForm({...authForm, nama: e.target.value})} required /><input type="email" placeholder="Email *" className="auth-input" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required /><div className="password-wrapper"><input type={showPassword? 'text' : 'password'} placeholder="Password *" className="auth-input" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} required /><span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>{showPassword? '🙈' : '👁️'}</span></div></>)}
+            {!isLogin && userType === 'pengunjung' && (<><input type="text" placeholder="Nama *" className="auth-input" value={authForm.nama} onChange={e => setAuthForm({...authForm, nama: e.target.value})} required /><input type="email" placeholder="Email *" className="auth-input" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required /><div className="password-wrapper"><input type={showPassword? 'text' : 'password'} placeholder="Password *" className="auth-input" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} required /><span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>{showPassword? '🙈' : '👁️'}</span></div></>)}
             {isLogin && (<><input type="email" placeholder="Email" className="auth-input" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required /><div className="password-wrapper"><input type={showPassword? 'text' : 'password'} placeholder="Password" className="auth-input" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} required /><span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>{showPassword? '🙈' : '👁️'}</span></div></>)}
             <button className="btn-primary" type="submit" disabled={loading}>{loading? 'Loading...' : isLogin? 'Masuk' : 'Daftar Sekarang'}</button>
           </form>
@@ -105,6 +148,7 @@ export default function App() {
     );
   }
 
+  // 4. APP UTAMA
   return (
     <div className={`app-container ${theme} ${mode} ${animation? 'anim' : ''}`}>
       <TopNavbar page={page} onRefresh={() => window.location.reload()} setMode={setMode} mode={mode} />
