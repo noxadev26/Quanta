@@ -54,20 +54,6 @@ export default function App() {
     setAuthForm({nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: '', kodeUnik: ''});
     setKodeGenerated('');
   }
-
-  const handlePost = () => {
-    if(!postTitle ||!postContent){ alert('Judul dan Isi wajib diisi!'); return; }
-    const newPost = { id: Date.now(), title: postTitle, content: postContent, author: user.nama, settings: postSettings };
-    setPosts([newPost,...posts]);
-    setPostTitle(''); setPostContent('');
-    setPage('home');
-  }
-
-  const handleReset = () => {
-    setPostTitle(''); setPostContent('');
-    setShowResetConfirm(false); setShowSettingPopup(false);
-  }
-
   if (!user) {
     return (
       <div className={`auth-wrapper ${theme} ${mode}`}>
@@ -138,7 +124,6 @@ export default function App() {
   return (
     <div className={`app-container ${theme} ${mode} ${animation? 'anim' : ''}`}>
       <TopNavbar page={page} onRefresh={() => window.location.reload()} />
-
       <div className="page-content">
         {page === 'home' && (
           <>
@@ -212,15 +197,12 @@ export default function App() {
           </div>
         )}
       </div>
-
       <BottomNav page={page} setPage={setPage} />
-
       {showSidebar && (
         <div className="popup-overlay" onClick={() => setShowSidebar(false)}>
           <div className="popup-box"><p>[Coming soon]</p></div>
         </div>
       )}
-
       {showSettingPopup && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -241,7 +223,6 @@ export default function App() {
           </div>
         </div>
       )}
-
       {showResetConfirm && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -280,3 +261,16 @@ export default function App() {
     );
   }
 }
+
+  const handlePost = () => {
+    if(!postTitle ||!postContent){ alert('Judul dan Isi wajib diisi!'); return; }
+    const newPost = { id: Date.now(), title: postTitle, content: postContent, author: user.nama, settings: postSettings };
+    setPosts([newPost,...posts]);
+    setPostTitle(''); setPostContent('');
+    setPage('home');
+  }
+
+  const handleReset = () => {
+    setPostTitle(''); setPostContent('');
+    setShowResetConfirm(false); setShowSettingPopup(false);
+  }
