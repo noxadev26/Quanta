@@ -4,7 +4,7 @@ import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWith
 import { getFirestore, collection, query, orderBy, where, getDocs, doc, getDoc, setDoc, addDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, onSnapshot, deleteDoc } from 'firebase/firestore'
 import './App.css'
 
-// CONFIG BARU QUANTA - SSI
+// CONFIG QUANTA - SSI
 const firebaseConfig = {
   apiKey: "AIzaSyAjDgzPe8tUNfYEZDsEIrrZlfc8hu9QlXI",
   authDomain: "quanta---ssi.firebaseapp.com",
@@ -18,6 +18,10 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+function generateVerificationId() {
+  return 'QTA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+}
+
 function App() {
   const [page, setPage] = useState('login')
   const [user, setUser] = useState(null)
@@ -28,8 +32,12 @@ function App() {
   const [selectedProfile, setSelectedProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [adminTab, setAdminTab] = useState('akun') // sidebar admin
+  const [verificationId, setVerificationId] = useState('')
 
   useEffect(() => {
+    setVerificationId(generateVerificationId())
+    
     onAuthStateChanged(auth, async (u) => {
       if(u) {
         setUser(u)
@@ -107,7 +115,7 @@ function App() {
   return (
     <div className="container">
       {page === 'login' && <LoginPage setPage={setPage} />}
-      {page === 'daftar' && <DaftarPage setPage={setPage} />}
+      {page === 'daftar' && <DaftarPage setPage={setPage} verificationId={verificationId} />}
 
       {user && (
         <>
@@ -115,8 +123,6 @@ function App() {
             <div className="header">
               <div className="logo" onClick={() => setPage('beranda')}>Quanta <span>• made by SSI</span></div>
               <div className="header-right">
-                {notifications.filter(n =>!n.read).length > 0 && <span className="notif-badge">{notifications.filter(n =>!n.read).length}</span>}
-                <button className="icon-btn" onClick={() => setPage('inbox')}>🔔</button>
                 {isAdmin && <button className="icon-btn" onClick={() => setPage('admin')}>🛡️</button>}
               </div>
             </div>
@@ -127,7 +133,7 @@ function App() {
           {page === 'posting' && <PostingPage user={user} userData={userData} setPage={setPage} />}
           {page === 'profil' && <ProfilPage user={user} userData={userData} posts={posts} setPage={setPage} avatarUrl={avatarUrl} />}
           {page === 'inbox' && <InboxPage notifications={notifications} users={users} avatarUrl={avatarUrl} setPage={setPage} />}
-          {page === 'admin' && isAdmin && <AdminPanel users={users} posts={posts} setPage={setPage} />}
+          {page === 'admin' && isAdmin && <AdminPanel users={users} posts={posts} setPage={setPage} adminTab={adminTab} setAdminTab={setAdminTab} verificationId={verificationId} />}
           {page === 'cari' && <SearchPage posts={posts} setPage={setPage} />}
 
           <div className="navbar">
@@ -195,6 +201,138 @@ function BerandaPage({ posts, user, userData, users, toggleLike, addComment, ava
   )
 }
 
+function DaftarPage({ setPage, verificationId }) { 
+  const [form, setForm] = useState({ nama: '', email: '', pass: '', umur: '', bidang: '', domisili: '', kelamin: 'Laki-laki', wa: '' }); 
+  const [showPass, setShowPass] = useState(false); 
+  
+  async function daftar(isMember = false) { 
+    if(!form.nama || !form.email || !form.pass || !form.wa) return alert('Isi semua data wajib *'); 
+    const res = await createUserWithEmailAndPassword(auth, form.email, form.pass); 
+    await setDoc(doc(db, "users", res.user.uid), { 
+      nama: form.nama, email: form.email, wa: form.wa, verificationId: isMember ? verificationId : null,
+      isMember: isMember, status: isMember ? 'pending' : 'aktif', 
+      tipe: isMember ? 'pending anggota' : 'pengunjung', umur: form.umur, bidangStudi: form.bidang, 
+      domisili: form.domisili, kelamin: form.kelamin, following: [], followers: [], createdAt: serverTimestamp() 
+    }); 
+    if(isMember) {
+      alert(`Daftar Anggota Berhasil!\n\nID Verifikasi kamu: ${verificationId}\nSilakan kirim ID ini ke grup komunitas untuk verifikasi.`)
+    } else {
+      alert('Daftar Berhasil!')
+    }
+  } 
+
+  return(
+    <div className="auth-wrapper">
+      <div className="glass-box">
+        <div className="logo-big">QUANTA<span></span></div>
+        <p className="welcome-sub">Buat Akun Baru</p>
+        <input className="auth-input" placeholder="Nama Lengkap *" value={form.nama} onChange={e => setForm({...form, nama: e.target.value})} />
+        <input className="auth-input" placeholder="Email *" value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
+        <div className="input-password"><input className="auth-input" placeholder="Password *" type={showPass? "text" : "password"} value={form.pass} onChange={e => setForm({...form, pass: e.target.value})} /><span onClick={() => setShowPass(!showPass)}>{showPass? '🙈' : '👁️'}</span></div>
+        <input className="auth-input" placeholder="No. WhatsApp *" value={form.wa} onChange={e => setForm({...form, wa: e.target.value})} />
+        <input className="auth-input" placeholder="Umur *" type="number" value={form.umur} onChange={e => setForm({...form, umur: e.target.value})} />
+        <input className="auth-input" placeholder="Bidang Studi *" value={form.bidang} onChange={e => setForm({...form, bidang: e.target.value})} />
+        <input className="auth-input" placeholder="Domisili *" value={form.domisili} onChange={e => setForm({...form, domisili: e.target.value})} />
+        
+        {verificationId && (
+          <div className="verification-box">
+            <p><b>ID Verifikasi Anggota:</b></p>
+            <h3>{verificationId}</h3>
+            <small>ID ini akan dipakai saat kamu daftar sebagai anggota</small>
+          </div>
+        )}
+
+        <div className="btn-group">
+          <button className="btn-primary" onClick={() => daftar(false)}>Daftar Pengunjung</button>
+          <button className="btn-admin" onClick={() => daftar(true)}>Daftar Anggota 🔑</button>
+        </div>
+        <p style={{fontSize: '12px', textAlign: 'center', opacity: 0.7}}>*Anggota perlu verifikasi via grup komunitas</p>
+        <p className="auth-text">Sudah punya akun? <span className="link" onClick={() => setPage('login')}>Masuk</span></p>
+      </div>
+    </div>
+  )
+}
+
+function AdminPanel({ users, posts, setPage, adminTab, setAdminTab, verificationId }) { 
+  const pendingUsers = users.filter(u => u.status === 'pending')
+  const activeUsers = users.filter(u => u.status === 'aktif')
+
+  async function verifikasiUser(uid) {
+    await updateDoc(doc(db, "users", uid), { status: 'aktif', isMember: true, tipe: 'admin' })
+    alert('User berhasil diverifikasi!')
+  }
+
+  async function hapusUser(uid) {
+    if(!confirm('Yakin hapus user ini?')) return
+    await deleteDoc(doc(db, "users", uid))
+    alert('User dihapus')
+  }
+
+  return(
+    <div className="admin-container">
+      <div className="admin-sidebar">
+        <h3>Panel Admin</h3>
+        <button className={adminTab==='akun'?'active':''} onClick={() => setAdminTab('akun')}>👥 Kelola Akun</button>
+        <button className={adminTab==='pending'?'active':''} onClick={() => setAdminTab('pending')}>⏳ Pending ({pendingUsers.length})</button>
+        <button className={adminTab==='post'?'active':''} onClick={() => setAdminTab('post')}>📝 Postingan</button>
+        <button onClick={() => setPage('beranda')}>← Kembali</button>
+      </div>
+
+      <div className="admin-content">
+        <div className="verification-display">
+          <p>ID Verifikasi Saat Ini</p>
+          <h2>{verificationId}</h2>
+        </div>
+
+        {adminTab === 'pending' && (
+          <div>
+            <h2>Akun Menunggu Verifikasi</h2>
+            {pendingUsers.length === 0 && <div className="empty-state">Tidak ada akun pending</div>}
+            {pendingUsers.map(u => (
+              <div className="admin-card" key={u.id}>
+                <p><b>{u.nama}</b> - {u.email}</p>
+                <p>WA: {u.wa} | ID: {u.verificationId}</p>
+                <button className="btn-primary" onClick={() => verifikasiUser(u.id)}>Verifikasi</button>
+                <button className="btn-danger" onClick={() => hapusUser(u.id)}>Hapus</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {adminTab === 'akun' && (
+          <div>
+            <h2>Semua Akun Aktif</h2>
+            {activeUsers.map(u => (
+              <div className="admin-card" key={u.id}>
+                <p><b>{u.nama}</b> - {u.tipe}</p>
+                <p>{u.email} | {u.wa}</p>
+                <button className="btn-danger" onClick={() => hapusUser(u.id)}>Hapus</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// KOMPONEN LAIN TETEP SAMA
+function LoginPage({ setPage }) { 
+  const [email, setEmail] = useState(''); const [pass, setPass] = useState(''); const [showPass, setShowPass] = useState(false)
+  return(
+    <div className="auth-wrapper">
+      <div className="glass-box">
+        <div className="logo-big">QUANTA<span></span></div>
+        <p className="welcome-sub">Selamat Datang Kembali</p>
+        <input className="auth-input" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
+        <div className="input-password"><input className="auth-input" placeholder="Password" type={showPass? "text" : "password"} value={pass} onChange={e => setPass(e.target.value)} /><span onClick={() => setShowPass(!showPass)}>{showPass? '🙈' : '👁️'}</span></div>
+        <button className="btn-primary" onClick={() => signInWithEmailAndPassword(auth, email, pass)}>Masuk</button>
+        <p className="auth-text">Belum punya akun? <span className="link" onClick={() => setPage('daftar')}>Daftar disini</span></p>
+      </div>
+    </div>
+  )
+}
+
 function ProfilOrangPage({ uid, users, posts, user, userData, toggleFollow, avatarUrl, setPage }) {
   const profileUser = users.find(u => u.id === uid)
   const userPosts = posts.filter(p => p.uid === uid)
@@ -224,61 +362,10 @@ function ProfilOrangPage({ uid, users, posts, user, userData, toggleFollow, avat
   )
 }
 
-function LoginPage({ setPage }) { 
-  const [email, setEmail] = useState(''); const [pass, setPass] = useState(''); const [showPass, setShowPass] = useState(false)
-  return(
-    <div className="auth-wrapper">
-      <div className="glass-box">
-        <div className="logo-big">QUANTA<span>SSI</span></div>
-        <p className="welcome-sub">Selamat Datang Kembali</p>
-        <input className="auth-input" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-        <div className="input-password"><input className="auth-input" placeholder="Password" type={showPass? "text" : "password"} value={pass} onChange={e => setPass(e.target.value)} /><span onClick={() => setShowPass(!showPass)}>{showPass? '🙈' : '👁️'}</span></div>
-        <button className="btn-primary" onClick={() => signInWithEmailAndPassword(auth, email, pass)}>Masuk</button>
-        <p className="auth-text">Belum punya akun? <span className="link" onClick={() => setPage('daftar')}>Daftar disini</span></p>
-      </div>
-    </div>
-  )
-}
-
-function DaftarPage({ setPage }) { 
-  const [form, setForm] = useState({ nama: '', email: '', pass: '', umur: '', bidang: '', domisili: '', kelamin: 'Laki-laki' }); 
-  const [showPass, setShowPass] = useState(false); 
-  
-  async function daftar(isMember = false) { 
-    if(!form.nama || !form.email || !form.pass) return alert('Isi semua data wajib *'); 
-    const res = await createUserWithEmailAndPassword(auth, form.email, form.pass); 
-    await setDoc(doc(db, "users", res.user.uid), { 
-      nama: form.nama, email: form.email, isMember: isMember, status: 'aktif', 
-      tipe: isMember ? 'admin' : 'pengunjung', umur: form.umur, bidangStudi: form.bidang, 
-      domisili: form.domisili, kelamin: form.kelamin, following: [], followers: [], createdAt: serverTimestamp() 
-    }); 
-    alert('Daftar Berhasil!') 
-  } 
-
-  return(
-    <div className="auth-wrapper">
-      <div className="glass-box">
-        <div className="logo-big">QUANTA<span>SSI</span></div>
-        <p className="welcome-sub">Buat Akun Baru</p>
-        <input className="auth-input" placeholder="Nama Lengkap *" value={form.nama} onChange={e => setForm({...form, nama: e.target.value})} />
-        <input className="auth-input" placeholder="Email *" value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
-        <div className="input-password"><input className="auth-input" placeholder="Password *" type={showPass? "text" : "password"} value={form.pass} onChange={e => setForm({...form, pass: e.target.value})} /><span onClick={() => setShowPass(!showPass)}>{showPass? '🙈' : '👁️'}</span></div>
-        <input className="auth-input" placeholder="Umur *" type="number" value={form.umur} onChange={e => setForm({...form, umur: e.target.value})} />
-        <input className="auth-input" placeholder="Bidang Studi *" value={form.bidang} onChange={e => setForm({...form, bidang: e.target.value})} />
-        <div className="btn-group">
-          <button className="btn-primary" onClick={() => daftar(false)}>Daftar Pengunjung</button>
-          <button className="btn-admin" onClick={() => daftar(true)}>Daftar Jadi Admin 🔑</button>
-        </div>
-        <p className="auth-text">Sudah punya akun? <span className="link" onClick={() => setPage('login')}>Masuk</span></p>
-      </div>
-    </div>
-  )
-}
-
 function PostingPage({ user, userData, setPage }) { 
   const [judul, setJudul] = useState(''); const [text, setText] = useState(''); const [tag, setTag] = useState('Edukasi'); 
   async function posting() { 
-    if(!userData.isMember) return alert('Hanya Admin/Anggota yang bisa posting'); 
+    if(!userData.isMember) return alert('Hanya Anggota yang bisa posting'); 
     if(!judul || !text) return alert('Judul dan isi wajib diisi');
     await addDoc(collection(db, "posts"), { uid: user.uid, judul, text, tag, likes: [], commentCount: 0, createdAt: serverTimestamp() }); 
     alert('Posting Berhasil!'); setPage('beranda') 
@@ -328,34 +415,6 @@ function InboxPage({ notifications, users, avatarUrl, setPage }) {
       <div className="profil-header"><button onClick={() => setPage('beranda')}>←</button><h2>Notifikasi</h2></div>
       {notifications.length === 0 && <div className="empty-state">Belum ada notifikasi</div>}
       {notifications.map((n,i) => <div className="notif-card" key={n.id} style={{animationDelay: `${i*0.05}s`}}><img src={avatarUrl(users.find(u=>u.id===n.from)?.nama)} className="post-avatar"/><p><b>{users.find(u=>u.id===n.from)?.nama}</b> {n.text}</p></div>)}
-    </div>
-  )
-}
-
-function AdminPanel({ users, posts, setPage }) { 
-  const [tab, setTab] = useState('akun')
-  const [search, setSearch] = useState('')
-
-  async function hapusUser(uid) {
-    if(!confirm('Yakin hapus user ini?')) return
-    await deleteDoc(doc(db, "users", uid))
-    alert('User dihapus')
-  }
-
-  async function hapusPost(postId) {
-    if(!confirm('Yakin hapus postingan ini?')) return
-    await deleteDoc(doc(db, "posts", postId))
-    alert('Postingan dihapus')
-  }
-
-  const filteredUsers = users.filter(u => u.nama?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase()))
-  const filteredPosts = posts.filter(p => p.judul?.toLowerCase().includes(search.toLowerCase()) || p.text?.toLowerCase().includes(search.toLowerCase()))
-
-  return(
-    <div className="content">
-      <div className="admin-header"><button onClick={() => setPage('beranda')}>←</button><h2>Panel Admin</h2></div>
-      <input className="auth-input" placeholder="🔍 Cari akun atau postingan..." value={search} onChange={e => setSearch(e.target.value)} />
-      {/* Isi admin panel kamu di sini */}
     </div>
   )
 }
