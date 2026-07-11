@@ -4,8 +4,12 @@ import './App.css';
 export default function App() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState('home');
-  const [isLogin, setIsLogin] = useState(true); // untuk tab login/register
-  const [authForm, setAuthForm] = useState({nama: '', email: '', password: ''});
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false); // buat icon mata
+
+  const [authForm, setAuthForm] = useState({
+    nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: ''
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -14,10 +18,14 @@ export default function App() {
     setError('');
     setLoading(true);
 
-    // SIMULASI LOGIN/REGISTER - nanti kita sambungin ke database
     setTimeout(() => {
       if(!authForm.email ||!authForm.password){
         setError('Email dan Password wajib diisi!');
+        setLoading(false);
+        return;
+      }
+      if(!isLogin && (!authForm.nama ||!authForm.umur ||!authForm.bidang ||!authForm.wa)){
+        setError('Nama, Umur, Bidang, WA wajib diisi!');
         setLoading(false);
         return;
       }
@@ -28,7 +36,7 @@ export default function App() {
 
   const handleLogout = () => {
     setUser(null);
-    setAuthForm({nama: '', email: '', password: ''});
+    setAuthForm({nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: ''});
   }
 
   // ===== HALAMAN LOGIN / REGISTER =====
@@ -39,7 +47,6 @@ export default function App() {
           <h1 className="logo-big">QUANTA</h1>
           <p className="welcome-sub">Platform Kreatif Indonesia</p>
 
-          {/* TAB LOGIN / DAFTAR */}
           <div className="auth-tabs">
             <button className={isLogin? 'tab-active' : ''} onClick={() => {setIsLogin(true); setError('')}}>Masuk</button>
             <button className={!isLogin? 'tab-active' : ''} onClick={() => {setIsLogin(false); setError('')}}>Daftar</button>
@@ -48,34 +55,33 @@ export default function App() {
           {error && <p className="error-text">{error}</p>}
 
           <form onSubmit={handleAuth}>
-            {/* INPUT NAMA CUMA MUNCUL KALO DAFTAR */}
-            {!isLogin &&
+            {/* FORM REGISTER LENGKAP */}
+            {!isLogin && (
+              <>
+                <input type="text" placeholder="Nama Lengkap" className="auth-input" value={authForm.nama} onChange={e => setAuthForm({...authForm, nama: e.target.value})} required />
+                <input type="number" placeholder="Umur" className="auth-input" value={authForm.umur} onChange={e => setAuthForm({...authForm, umur: e.target.value})} required />
+                <input type="text" placeholder="Domisili (Opsional)" className="auth-input" value={authForm.domisili} onChange={e => setAuthForm({...authForm, domisili: e.target.value})} />
+                <input type="text" placeholder="Bidang Studi Favorit" className="auth-input" value={authForm.bidang} onChange={e => setAuthForm({...authForm, bidang: e.target.value})} required />
+                <input type="tel" placeholder="Nomor WA 08xxxxxxxx" className="auth-input" value={authForm.wa} onChange={e => setAuthForm({...authForm, wa: e.target.value})} required />
+              </>
+            )}
+
+            <input type="email" placeholder="Email" className="auth-input" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required />
+
+            {/* INPUT PASSWORD + ICON MATA */}
+            <div className="password-wrapper">
               <input
-                type="text"
-                placeholder="Nama Lengkap"
+                type={showPassword? 'text' : 'password'}
+                placeholder="Password"
                 className="auth-input"
-                value={authForm.nama}
-                onChange={e => setAuthForm({...authForm, nama: e.target.value})}
+                value={authForm.password}
+                onChange={e => setAuthForm({...authForm, password: e.target.value})}
                 required
               />
-            }
-
-            <input
-              type="email"
-              placeholder="Email"
-              className="auth-input"
-              value={authForm.email}
-              onChange={e => setAuthForm({...authForm, email: e.target.value})}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className="auth-input"
-              value={authForm.password}
-              onChange={e => setAuthForm({...authForm, password: e.target.value})}
-              required
-            />
+              <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword? '🙈' : '👁️'}
+              </span>
+            </div>
 
             <button className="btn-primary" type="submit" disabled={loading}>
               {loading? 'Loading...' : isLogin? 'MASUK' : 'DAFTAR SEKARANG'}
@@ -86,7 +92,7 @@ export default function App() {
     );
   }
 
-  // ===== HALAMAN UTAMA KALAU UDAH LOGIN =====
+  // ===== HALAMAN UTAMA =====
   return (
     <div className="app-container">
       <div className="page-content">
@@ -94,7 +100,6 @@ export default function App() {
         <p>Selamat datang, <b>{user.nama}</b>!</p>
         <button onClick={handleLogout} className="btn-logout">Logout</button>
       </div>
-
       <BottomNav />
     </div>
   );
@@ -102,21 +107,11 @@ export default function App() {
   function BottomNav() {
     return (
       <nav className="navbar">
-        <button onClick={() => setPage('home')} className={`nav-item ${page === 'home'? 'active' : ''}`}>
-          <span>🏠</span>Home
-        </button>
-        <button onClick={() => setPage('cari')} className={`nav-item ${page === 'cari'? 'active' : ''}`}>
-          <span>🔍</span>Cari
-        </button>
-        <button onClick={() => setPage('post')} className="nav-item nav-add">
-          <span>+</span>
-        </button>
-        <button onClick={() => setPage('inbox')} className={`nav-item ${page === 'inbox'? 'active' : ''}`}>
-          <span>💬</span>Inbox
-        </button>
-        <button onClick={() => setPage('profil')} className={`nav-item ${page === 'profil'? 'active' : ''}`}>
-          <span>👤</span>Profil
-        </button>
+        <button onClick={() => setPage('home')} className={`nav-item ${page === 'home'? 'active' : ''}`}><span>🏠</span>Home</button>
+        <button onClick={() => setPage('cari')} className={`nav-item ${page === 'cari'? 'active' : ''}`}><span>🔍</span>Cari</button>
+        <button onClick={() => setPage('post')} className="nav-item nav-add"><span>+</span></button>
+        <button onClick={() => setPage('inbox')} className={`nav-item ${page === 'inbox'? 'active' : ''}`}><span>💬</span>Inbox</button>
+        <button onClick={() => setPage('profil')} className={`nav-item ${page === 'profil'? 'active' : ''}`}><span>👤</span>Profil</button>
       </nav>
     );
   }
