@@ -46,19 +46,16 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [users] = useState([{nama: 'Budi', type: 'anggota'}, {nama: 'Ani', type: 'pengunjung'}, {nama: 'Joko', type: 'anggota'}, {nama: 'Sari', type: 'anggota'}]);
 
-  // STATE BARU BUAT FITUR BARU
   const [selectedPost, setSelectedPost] = useState(null);
   const [viewProfile, setViewProfile] = useState(null);
   const [following, setFollowing] = useState([]);
 
-  // LOADING + AUTO SKIP
   useEffect(() => {
     setTimeout(() => setIsLoading(false), 2000);
     const isApp = window.Capacitor?.isNativePlatform;
     if (isApp) { setShowLanding(false); }
   }, []);
 
-  // CEK LOGIN DARI FIREBASE
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (userAuth) => {
       if (userAuth) {
@@ -96,7 +93,7 @@ export default function App() {
         const userCredential = await createUserWithEmailAndPassword(auth, authForm.email, authForm.password);
         const user = userCredential.user;
         await setDoc(doc(db, "users", user.uid), {
-      ...authForm, type: userType, createdAt: serverTimestamp()
+     ...authForm, type: userType, createdAt: serverTimestamp()
         });
       }
       showToast(`Selamat datang!`);
@@ -144,7 +141,6 @@ export default function App() {
     }
   }
 
-  // 1. LANDING PAGE
   if (showLanding &&!user) {
     return (
       <div className={`landing-container ${theme} ${mode}`}>
@@ -180,10 +176,8 @@ export default function App() {
     )
   }
 
-  // 2. LOADING
   if (isLoading) { return (<div className={`loading-screen ${theme} ${mode}`}><div className="loading-logo">QUANTA</div><div className="loading-spinner"></div></div>); }
 
-  // 3. LOGIN/DAFTAR
   if (!user) {
     return (
       <div className={`auth-wrapper ${theme} ${mode}`}>
@@ -206,13 +200,11 @@ export default function App() {
     );
   }
 
-  // 4. APP UTAMA
   return (
     <div className={`app-container ${theme} ${mode} ${animation? 'anim' : ''}`}>
       <TopNavbar page={page} onRefresh={() => window.location.reload()} setMode={setMode} mode={mode} />
       <div className="page-content">
 
-        {/* PAGE HOME - CARD DIPOTONG + ADA AVATAR */}
         {page === 'home' && (<>
           <h2>Beranda</h2>
           {posts.length === 0? <p className="empty-state">Belum ada postingan. Yuk posting pertama!</p> :
@@ -236,7 +228,6 @@ export default function App() {
           ))}</>
         )}
 
-        {/* PAGE DETAIL POST */}
         {selectedPost && (
           <div className="post-detail-page">
             <button className="btn-back" onClick={() => setSelectedPost(null)}>← Kembali</button>
@@ -261,7 +252,6 @@ export default function App() {
           </div>
         )}
 
-        {/* PAGE PROFIL ORANG */}
         {viewProfile && (
           <div className="profil-page">
             <button className="btn-back" onClick={() => setViewProfile(null)}>← Kembali</button>
@@ -295,27 +285,6 @@ export default function App() {
       <BottomNav page={page} setPage={setPage} />
       {toast && <div className="toast">{toast}</div>}
       {showSidebar && (<div className="popup-overlay" onClick={() => setShowSidebar(false)}><div className="popup-box"><p>[Coming soon]</p></div></div>)}
-      {showSettingPopup && (<div className="popup-overlay"><div className="popup-box"><div className="popup-header"><h3>Pengaturan Postingan</h3><button className="icon-btn-small" onClick={() => setShowSettingPopup(false)}>X</button></div><label><input type="checkbox" checked={postSettings.like} onChange={e => setPostSettings({...postSettings, like: e.target.checked})} /> Izinkan Like</button><label><input type="checkbox" checked={postSettings.comment} onChange={e => setPostSettings({...postSettings, comment: e.target.checked})} /> Izinkan Comment</button><label>Tampilkan pada:<select value={postSettings.tampil} onChange={e => setPostSettings({...postSettings, tampil: e.target.value})} className="auth-input"><option value="semua">Pengunjung & Anggota</option><option value="pengunjung">Pengunjung</option><option value="anggota">Anggota</option></select></button><button className="btn-danger" onClick={() => setShowResetConfirm(true)}>Reset Postingan</button></div></div>)}
-      {showResetConfirm && (<div className="popup-overlay"><div className="popup-box"><p>Yakin reset postingan?</p><div className="popup-buttons"><button className="btn-primary" onClick={handleReset}>✓</button><button className="btn-secondary" onClick={() => {setShowResetConfirm(false); setShowSettingPopup(false)}}>X</button></div></div></div>)}
-    </div>
-  );
-
-  function TopNavbar(        {page === 'cari' && (<><h2>🔍 Cari User</h2><input type="text" placeholder="Cari nama user..." className="auth-input" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />{users.filter(u => u.nama.toLowerCase().includes(searchQuery.toLowerCase())).map(u => (<div className="user-card" key={u.nama} onClick={() => setViewProfile(u.nama)}><div className="avatar-small">{u.nama[0]}</div><div><h4>{u.nama}</h4><span className={`badge ${u.type}`}>{u.type}</span></div></div>))}</>)}
-
-        {page === 'post' && (<div className="post-page"><div className="top-nav-small"><h3>Posting</h3><button className="icon-btn" onClick={() => setShowSettingPopup(true)}>⚙️</button></div><input type="text" placeholder="Judul Postingan" className="auth-input" value={postTitle} onChange={e => setPostTitle(e.target.value)} /><textarea placeholder="Isi Postingan..." className="auth-input textarea" value={postContent} onChange={e => setPostContent(e.target.value)} rows="4"></textarea><label className="upload-label">📷 Upload Gambar<input type="file" accept="image/*" onChange={handleImageUpload} hidden /></label>{postImage && <img src={postImage} className="preview-image" />}<button className="btn-primary" onClick={handlePost}>Posting</button></div>)}
-
-        {page === 'inbox' && <h2>💬 [COMING SOON]</h2>}
-
-        {page === 'profil' && (<div className="profil-page"><div className="top-nav-small"><button className="icon-btn" onClick={() => setShowSidebar(true)}>☰</button><h3>Profil</h3><button className="icon-btn" onClick={() => setPage('pengaturan')}>⚙️</button></div><div className="profile-card"><div className="avatar">{user.nama.charAt(0).toUpperCase()}</div><h2>{user.nama}</h2><span className={`badge ${user.type}`}>{user.type}</span></div><div className="stats-grid"><div><h3>{posts.filter(p => p.author === user.nama).length}</h3><p>Postingan</p></div><div><h3>{posts.filter(p => p.author === user.nama).reduce((a,p) => a + p.likes, 0)}</h3><p>Total Like</p></div><div><h3>{Math.floor(Math.random() * 100)}</h3><p>Followers</p></div><div><h3>{following.length}</h3><p>Following</p></div></div><button onClick={handleLogout} className="btn-logout">Logout</button></div>)}
-
-        {page === 'pengaturan' && (<div className="setting-page"><h2>Pengaturan Website</h2><div className="setting-group"><h4>Theme</h4><select value={theme} onChange={e => setTheme(e.target.value)} className="auth-input"><option value="glassmorphic">Glassmorphic</option><option value="basic">Basic</option></select><select value={mode} onChange={e => setMode(e.target.value)} className="auth-input"><option value="gelap">Gelap</option><option value="terang">Terang</option></select><label><input type="checkbox" checked={animation} onChange={e => setAnimation(e.target.checked)} /> Tampilkan Animasi</label></div><div className="setting-group"><h4>Keamanan</h4><button className="btn-secondary">Privat Akun</button><button className="btn-secondary">Edit Password & Email</button></div><div className="setting-group"><h4>Akun</h4><button className="btn-secondary">Edit Profil</button><button className="btn-secondary">Ganti Nama</button><button className="btn-secondary">Edit Bio</button><button className="btn-secondary">Ganti Foto Profil</button><button className="btn-secondary">Notifikasi</button><button className="btn-secondary">Bahasa</button></div><button className="btn-primary" onClick={() => setPage('profil')}>Kembali</button></div>)}
-      </div>
-
-      <BottomNav page={page} setPage={setPage} />
-      {toast && <div className="toast">{toast}</div>}
-
-      {showSidebar && (<div className="popup-overlay" onClick={() => setShowSidebar(false)}><div className="popup-box"><p>[Coming soon]</p></div></div>)}
-
       {showSettingPopup && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -336,12 +305,10 @@ export default function App() {
           </div>
         </div>
       )}
-
       {showResetConfirm && (<div className="popup-overlay"><div className="popup-box"><p>Yakin reset postingan?</p><div className="popup-buttons"><button className="btn-primary" onClick={handleReset}>✓</button><button className="btn-secondary" onClick={() => {setShowResetConfirm(false); setShowSettingPopup(false)}}>X</button></div></div></div>)}
     </div>
   );
 
   function TopNavbar({ page, onRefresh, setMode, mode }) { return (<nav className="top-navbar"><div><h1>Quanta Project</h1><p>made by SSI</p></div><div style={{display: 'flex', gap: '10px'}}><button className="icon-btn" onClick={() => setMode(mode === 'gelap'? 'terang' : 'gelap')}>{mode === 'gelap'? '☀️' : '🌙'}</button><button className="icon-btn" onClick={onRefresh}>🔄</button></div></nav>) }
-
   function BottomNav({ page, setPage }) { return (<nav className="navbar"><button onClick={() => {setPage('home'); setSelectedPost(null); setViewProfile(null)}} className={`nav-item ${page === 'home'? 'active' : ''}`}><span>🏠</span>Home</button><button onClick={() => setPage('cari')} className={`nav-item ${page === 'cari'? 'active' : ''}`}><span>🔍</span>Cari</button><button onClick={() => setPage('post')} className="nav-item nav-add"><span>+</span></button><button onClick={() => setPage('inbox')} className={`nav-item ${page === 'inbox'? 'active' : ''}`}><span>💬</span>Inbox</button><button onClick={() => {setPage('profil'); setViewProfile(user.nama)}} className={`nav-item ${page === 'profil'? 'active' : ''}`}><span>👤</span>Profil</button></nav>); }
 }
