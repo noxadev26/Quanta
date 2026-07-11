@@ -21,31 +21,30 @@ body { margin: 0; font-family: 'Poppins', sans-serif; }
 .top-navbar p { margin: 0; font-size: 11px; color: #8B949E; }
 .icon-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #E6EDF3; width: 40px; height: 40px; }
 
-/* POST */
+/* POST & AUTH */
 .post-card { background: #161B22; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #30363D; }
 .textarea { resize: vertical; }
 .top-nav-small { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+.glass-box { background: #161B22; padding: 30px 25px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #30363D; }
+.logo-big { text-align: center; font-size: 36px; color: #5865F2; font-weight: 700; }
 
-/* SETTING */
-.setting-group { background: #161B22; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+.auth-input { width: 100%; padding: 14px; margin: 10px 0; background: #0D1117; border: 1px solid #30363D; color: #E6EDF3; border-radius: 10px; }
+.btn-primary { width: 100%; padding: 14px; background: #5865F2; color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; margin-top: 15px; }
 .btn-secondary { width: 100%; padding: 10px; background: #21262D; color: #E6EDF3; border: 1px solid #30363D; border-radius: 8px; margin: 5px 0; cursor: pointer; }
 .btn-danger { width: 100%; padding: 10px; background: #ef4444; color: white; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; }
+.btn-logout { padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; }
 
-/* POPUP */
+/* SETTING & POPUP */
+.setting-group { background: #161B22; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
 .popup-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 200; }
 .popup-box { background: #161B22; padding: 20px; border-radius: 16px; width: 90%; max-width: 400px; border: 1px solid #30363D; }
 .popup-header { display: flex; justify-content: space-between; align-items: center; }
 .icon-btn-small { background: none; border: none; font-size: 16px; cursor: pointer; color: #E6EDF3; }
 .popup-buttons { display: flex; gap: 10px; margin-top: 15px; }
 
-/* AUTH & NAVBAR BAWAH - sama seperti sebelumnya */
-.auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-.glass-box { background: #161B22; padding: 30px 25px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #30363D; }
-.logo-big { text-align: center; font-size: 36px; color: #5865F2; font-weight: 700; }
-.auth-input { width: 100%; padding: 14px; margin: 10px 0; background: #0D1117; border: 1px solid #30363D; color: #E6EDF3; border-radius: 10px; }
-.btn-primary { width: 100%; padding: 14px; background: #5865F2; color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; margin-top: 15px; }
+/* NAVBAR BAWAH */
 .navbar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: #161B22; padding: 10px 0; border-top: 1px solid #30363D; }
 .nav-item { background: none; border: none; color: #8B949E; display: flex; flex-direction: column; align-items: center; font-size: 11px; gap: 4px; cursor: pointer; flex: 1; }
 .nav-item.active { color: #5865F2; }
 .nav-add { background: #5865F2; color: white; border-radius: 50%; width: 55px; height: 55px; font-size: 28px; margin-top: -22px; border: 4px solid #0D1117; }
-.btn-logout { padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; }
