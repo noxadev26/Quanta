@@ -115,3 +115,17 @@ body { margin: 0; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
   .hero-buttons { flex-direction: column; }
   .footer-content { flex-direction: column; text-align: center; }
 }
+.dev-banner {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: #FFC107;
+  color: #000;
+  text-align: center;
+  padding: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  z-index: 999;
+}
+.landing-nav { top: 44px; } 
+/* Geser navbar kebawah biar gak ketutup banner */
