@@ -19,3 +19,4 @@ function BottomNav() {
       </nav>
     );
   }
+export default App;
