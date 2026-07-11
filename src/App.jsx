@@ -5,13 +5,22 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState('home');
   const [isLogin, setIsLogin] = useState(true);
-  const [showPassword, setShowPassword] = useState(false); // buat icon mata
+  const [userType, setUserType] = useState('pengunjung'); // pengunjung / anggota
+  const [showPassword, setShowPassword] = useState(false);
 
   const [authForm, setAuthForm] = useState({
-    nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: ''
+    nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: '', kodeUnik: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [kodeGenerated, setKodeGenerated] = useState(''); // buat nyimpen kode unik
+
+  // FUNCTION GENERATE KODE UNIK
+  const generateKodeUnik = () => {
+    const kode = 'QUA-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    setKodeGenerated(kode);
+    setAuthForm({...authForm, kodeUnik: kode});
+  }
 
   const handleAuth = (e) => {
     e.preventDefault();
@@ -24,19 +33,23 @@ export default function App() {
         setLoading(false);
         return;
       }
-      if(!isLogin && (!authForm.nama ||!authForm.umur ||!authForm.bidang ||!authForm.wa)){
-        setError('Nama, Umur, Bidang, WA wajib diisi!');
-        setLoading(false);
-        return;
+      // VALIDASI KALO ANGGOTA
+      if(!isLogin && userType === 'anggota'){
+        if(!authForm.nama ||!authForm.umur ||!authForm.bidang ||!authForm.wa ||!authForm.kodeUnik){
+          setError('Semua data Anggota wajib diisi + Generate Kode Unik!');
+          setLoading(false);
+          return;
+        }
       }
-      setUser({nama: authForm.nama || authForm.email.split('@')[0]});
+      setUser({nama: authForm.nama || authForm.email.split('@')[0], type: userType});
       setLoading(false);
     }, 1000);
   }
 
   const handleLogout = () => {
     setUser(null);
-    setAuthForm({nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: ''});
+    setAuthForm({nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: '', kodeUnik: ''});
+    setKodeGenerated('');
   }
 
   // ===== HALAMAN LOGIN / REGISTER =====
@@ -55,32 +68,51 @@ export default function App() {
           {error && <p className="error-text">{error}</p>}
 
           <form onSubmit={handleAuth}>
-            {/* FORM REGISTER LENGKAP */}
+
+            {/* PILIHAN PENGUNJUNG / ANGGOTA - CUMA MUNCUL SAAT DAFTAR */}
             {!isLogin && (
+              <div className="user-type-selector">
+                <p>Pilih Tipe Akun:</p>
+                <div className="type-buttons">
+                  <button type="button" className={userType === 'pengunjung'? 'type-active' : ''} onClick={() => setUserType('pengunjung')}>Pengunjung</button>
+                  <button type="button" className={userType === 'anggota'? 'type-active' : ''} onClick={() => setUserType('anggota')}>Anggota</button>
+                </div>
+              </div>
+            )}
+
+            {/* FORM ANGGOTA LENGKAP */}
+            {!isLogin && userType === 'anggota' && (
               <>
                 <input type="text" placeholder="Nama Lengkap" className="auth-input" value={authForm.nama} onChange={e => setAuthForm({...authForm, nama: e.target.value})} required />
                 <input type="number" placeholder="Umur" className="auth-input" value={authForm.umur} onChange={e => setAuthForm({...authForm, umur: e.target.value})} required />
                 <input type="text" placeholder="Domisili (Opsional)" className="auth-input" value={authForm.domisili} onChange={e => setAuthForm({...authForm, domisili: e.target.value})} />
                 <input type="text" placeholder="Bidang Studi Favorit" className="auth-input" value={authForm.bidang} onChange={e => setAuthForm({...authForm, bidang: e.target.value})} required />
                 <input type="tel" placeholder="Nomor WA 08xxxxxxxx" className="auth-input" value={authForm.wa} onChange={e => setAuthForm({...authForm, wa: e.target.value})} required />
+
+                {/* TOMBOL GENERATE KODE UNIK */}
+                <div className="kode-unik-box">
+                  <button type="button" className="btn-generate" onClick={generateKodeUnik}>Generate Kode Unik</button>
+                  {kodeGenerated && (
+                    <>
+                      <div className="kode-hasil">{kodeGenerated}</div>
+                      <p className="kode-info">Berikan kode unik tersebut kepada admin di grup komunitas untuk di verifikasi akun</p>
+                    </>
+                  )}
+                </div>
               </>
             )}
 
+            {/* FORM PENGUNJUNG - SIMPLE */}
+            {!isLogin && userType === 'pengunjung' && (
+              <input type="text" placeholder="Nama" className="auth-input" value={authForm.nama} onChange={e => setAuthForm({...authForm, nama: e.target.value})} required />
+            )}
+
+            {/* EMAIL & PASSWORD UNTUK SEMUA */}
             <input type="email" placeholder="Email" className="auth-input" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required />
 
-            {/* INPUT PASSWORD + ICON MATA */}
             <div className="password-wrapper">
-              <input
-                type={showPassword? 'text' : 'password'}
-                placeholder="Password"
-                className="auth-input"
-                value={authForm.password}
-                onChange={e => setAuthForm({...authForm, password: e.target.value})}
-                required
-              />
-              <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword? '🙈' : '👁️'}
-              </span>
+              <input type={showPassword? 'text' : 'password'} placeholder="Password" className="auth-input" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} required />
+              <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>{showPassword? '🙈' : '👁️'}</span>
             </div>
 
             <button className="btn-primary" type="submit" disabled={loading}>
@@ -98,6 +130,7 @@ export default function App() {
       <div className="page-content">
         <h1>📄 Halaman {page}</h1>
         <p>Selamat datang, <b>{user.nama}</b>!</p>
+        <p>Tipe Akun: <b>{user.type}</b></p>
         <button onClick={handleLogout} className="btn-logout">Logout</button>
       </div>
       <BottomNav />
