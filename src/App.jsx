@@ -114,7 +114,7 @@ export default function App() {
         <footer className="landing-footer">
           <div className="footer-content">
             <div><h4>QUANTA PROJECT</h4><p>Platform Edukasi Digital SSI</p></div>
-            <div><h4>Kontak</h4><p>Email: support@ssi.org</p></div>
+            <div><h4>Kontak</h4><p>Email: socialscience.id@gmail.com</p></div>
           </div>
           <p className="copyright">© 2026 QUANTA by SSI. All rights reserved.</p>
         </footer>
