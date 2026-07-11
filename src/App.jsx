@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// GANTI DENGAN API KEY LU
+// VERSI 5 NAVBAR FINAL 21 APRIL
 const API_URL = "https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxx/exec"; 
 
 function App() {
