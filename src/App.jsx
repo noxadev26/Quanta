@@ -205,6 +205,87 @@ export default function App() {
       </div>
     );
   }
+
+  // 4. APP UTAMA
+  return (
+    <div className={`app-container ${theme} ${mode} ${animation? 'anim' : ''}`}>
+      <TopNavbar page={page} onRefresh={() => window.location.reload()} setMode={setMode} mode={mode} />
+      <div className="page-content">
+
+        {/* PAGE HOME - CARD DIPOTONG + ADA AVATAR */}
+        {page === 'home' && (<>
+          <h2>Beranda</h2>
+          {posts.length === 0? <p className="empty-state">Belum ada postingan. Yuk posting pertama!</p> :
+          posts.map(p => (
+            <div key={p.id} className="post-card">
+              <div className="post-header" onClick={() => setViewProfile(p.author)}>
+                <div className="avatar-small">{p.author.charAt(0)}</div>
+                <div><h4>{p.author}</h4><small>{new Date(p.id).toLocaleDateString()}</small></div>
+              </div>
+              <div onClick={() => setSelectedPost(p)}>
+                <h3>{p.title}</h3>
+                {p.image && <img src={p.image} className="post-image" />}
+                <p>{truncateText(p.content, 150)}</p>
+                {p.content.length > 150 && <span className="read-more">Baca Selengkapnya</span>}
+              </div>
+              <div className="post-footer">
+                <button className="like-btn" onClick={() => handleLike(p.id)}>{likedPosts.includes(p.id)? '❤️' : '🤍'} {p.likes}</button>
+                <span>{(comments[p.id] || []).length} Komentar</span>
+              </div>
+            </div>
+          ))}</>
+        )}
+
+        {/* PAGE DETAIL POST */}
+        {selectedPost && (
+          <div className="post-detail-page">
+            <button className="btn-back" onClick={() => setSelectedPost(null)}>← Kembali</button>
+            <div className="post-header" onClick={() => {setViewProfile(selectedPost.author); setSelectedPost(null)}}>
+              <div className="avatar">{selectedPost.author.charAt(0)}</div>
+              <h3>{selectedPost.author}</h3>
+            </div>
+            <h2>{selectedPost.title}</h2>
+            {selectedPost.image && <img src={selectedPost.image} className="post-image-full" />}
+            <p>{selectedPost.content}</p>
+            <div className="post-footer">
+              <button className="like-btn" onClick={() => handleLike(selectedPost.id)}>{likedPosts.includes(selectedPost.id)? '❤️' : '🤍'} {selectedPost.likes} Like</button>
+            </div>
+            <div className="comment-section">
+              <h4>Komentar</h4>
+              {(comments[selectedPost.id] || []).map((c,i) => <div key={i} className="comment"><b>{c.author}:</b> {c.text}</div>)}
+              <div className="comment-input-wrap">
+                <input type="text" placeholder="Tulis komentar..." className="auth-input" value={commentInput} onChange={e => setCommentInput(e.target.value)} />
+                <button onClick={() => handleComment(selectedPost.id)}>Kirim</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PAGE PROFIL ORANG */}
+        {viewProfile && (
+          <div className="profil-page">
+            <button className="btn-back" onClick={() => setViewProfile(null)}>← Kembali</button>
+            <div className="profile-card">
+              <div className="avatar">{viewProfile.charAt(0)}</div>
+              <h2>{viewProfile}</h2>
+              <span className={`badge anggota`}>Anggota</span>
+              {viewProfile!== user.nama && (
+                <button className="btn-primary" onClick={() => handleFollow(viewProfile)}>
+                  {following.includes(viewProfile)? 'Following' : 'Follow'}
+                </button>
+              )}
+            </div>
+            <div className="stats-grid">
+              <div><h3>{posts.filter(p => p.author === viewProfile).length}</h3><p>Postingan</p></div>
+              <div><h3>{posts.filter(p => p.author === viewProfile).reduce((a,p) => a + p.likes, 0)}</h3><p>Total Like</p></div>
+              <div><h3>{Math.floor(Math.random() * 100)}</h3><p>Followers</p></div>
+              <div><h3>{following.length}</h3><p>Following</p></div>
+            </div>
+            <h3>Postingan {viewProfile}</h3>
+            {posts.filter(p => p.author === viewProfile).map(p => <div key={p.id} className="post-card" onClick={() => setSelectedPost(p)}><h4>{p.title}</h4></div>)}
+          </div>
+        )}
+
         {page === 'cari' && (<><h2>🔍 Cari User</h2><input type="text" placeholder="Cari nama user..." className="auth-input" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />{users.filter(u => u.nama.toLowerCase().includes(searchQuery.toLowerCase())).map(u => (<div className="user-card" key={u.nama} onClick={() => setViewProfile(u.nama)}><div className="avatar-small">{u.nama[0]}</div><div><h4>{u.nama}</h4><span className={`badge ${u.type}`}>{u.type}</span></div></div>))}</>)}
         {page === 'post' && (<div className="post-page"><div className="top-nav-small"><h3>Posting</h3><button className="icon-btn" onClick={() => setShowSettingPopup(true)}>⚙️</button></div><input type="text" placeholder="Judul Postingan" className="auth-input" value={postTitle} onChange={e => setPostTitle(e.target.value)} /><textarea placeholder="Isi Postingan..." className="auth-input textarea" value={postContent} onChange={e => setPostContent(e.target.value)} rows="4"></textarea><label className="upload-label">📷 Upload Gambar<input type="file" accept="image/*" onChange={handleImageUpload} hidden /></label>{postImage && <img src={postImage} className="preview-image" />}<button className="btn-primary" onClick={handlePost}>Posting</button></div>)}
         {page === 'inbox' && <h2>💬 [COMING SOON]</h2>}
