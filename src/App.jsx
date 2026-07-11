@@ -91,6 +91,13 @@ export default function App() {
   if (showLanding &&!user) {
     return (
       <div className={`landing-container ${theme} ${mode}`}>
+        
+        {/* BANNER PERINGATAN */}
+        <div className="dev-banner">
+          🚧 PERINGATAN: Website ini masih dalam tahap pengembangan. 
+          Beberapa fitur belum tersedia sepenuhnya. 🚧
+        </div>
+
         <nav className="landing-nav">
           <div className="nav-left"><h1>QUANTA</h1><p>PROJECT</p></div>
           <div className="nav-right"><button className="btn-nav" onClick={() => setShowLanding(false)}>Masuk</button></div>
