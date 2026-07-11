@@ -103,6 +103,7 @@ function LoginPage({ setPage, showPopup }) {
   const [email, setEmail] = useState(''); const [pass, setPass] = useState(''); const [showPass, setShowPass] = useState(false)
 
   async function handleLogin() {
+    if(!email ||!pass) return showPopup('Data Kurang', 'Email dan Password wajib diisi')
     try {
       await signInWithEmailAndPassword(auth, email, pass)
     } catch (err) {
@@ -145,13 +146,13 @@ function DaftarPage({ setPage, showPopup }) {
       if(tipeDaftar === 'anggota') {
         if(!kodeUnik) return showPopup('Kode Belum Ada', 'Klik "Minta Kode Unik" dulu')
         await setDoc(doc(db, "users", res.user.uid), {
-       ...form, isMember: false, status: 'pending', tipe: 'pending anggota',
+      ...form, isMember: false, status: 'pending', tipe: 'pending anggota',
           verificationId: kodeUnik, following: [], followers: [], createdAt: serverTimestamp()
         });
         showPopup('Daftar Berhasil', `ID Verifikasi: ${kodeUnik}\n\nKirim ID ini ke grup komunitas. Admin akan ACC kamu.`)
       } else {
         await setDoc(doc(db, "users", res.user.uid), {
-       ...form, isMember: false, status: 'aktif', tipe: 'pengunjung',
+      ...form, isMember: false, status: 'aktif', tipe: 'pengunjung',
           following: [], followers: [], createdAt: serverTimestamp()
         });
         showPopup('Selamat', 'Daftar Pengunjung Berhasil!')
@@ -178,9 +179,12 @@ function DaftarPage({ setPage, showPopup }) {
 
         {tipeDaftar === 'anggota' && showKode && (
           <div className="verification-box">
-            <p><b>ID Verifikasi Anggota:</b></p>
+            <p><b>ID Verifikasi Anggota</b></p>
             <h3>{kodeUnik}</h3>
-            <small>Kirim ID ini ke grup komunitas untuk verifikasi. Setelah di ACC admin baru bisa login sebagai anggota.</small>
+            <small>
+              Kirim ID ini ke grup komunitas<br/>
+              Admin akan ACC dalam 1x24 jam
+            </small>
           </div>
         )}
 
@@ -246,7 +250,7 @@ function AdminPanel({ users, setPage, adminTab, setAdminTab, showPopup }) {
 }
 
 function BerandaPage({ setPage }) {
-  return <div className="content"><h2>Beranda Quanta</h2></div>
+  return <div className="content"><h2>Beranda Quanta</h2><p>Selamat datang di Quanta</p></div>
 }
 function ProfilPage({ user, userData, setPage }) {
   return(
@@ -256,6 +260,7 @@ function ProfilPage({ user, userData, setPage }) {
         <div className="avatar-big">{userData?.nama?.split(' ').map(n=>n[0]).join('')}</div>
         <h3>{userData?.nama}</h3>
         <p className="profil-status">{userData?.tipe}</p>
+        <p style={{color:'#888', fontSize:'13px'}}>{userData?.email}</p>
         <button className="btn-logout" onClick={() => signOut(auth)}>Keluar</button>
       </div>
     </div>
