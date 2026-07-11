@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import { auth, db } from './firebase.js'; // FIREBASE
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import {
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 export default function App() {
   const [showLanding, setShowLanding] = useState(true);
@@ -33,20 +46,36 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [users] = useState([{nama: 'Budi', type: 'anggota'}, {nama: 'Ani', type: 'pengunjung'}, {nama: 'Joko', type: 'anggota'}, {nama: 'Sari', type: 'anggota'}]);
 
+  // LOADING + AUTO SKIP
   useEffect(() => {
     setTimeout(() => setIsLoading(false), 2000);
-    // AUTO SKIP LANDING KALO DI APK
     const isApp = window.Capacitor?.isNativePlatform;
     if (isApp) { setShowLanding(false); }
   }, []);
 
+  // CEK LOGIN DARI FIREBASE
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (userAuth) => {
+      if (userAuth) {
+        const userDoc = await getDoc(doc(db, "users", userAuth.uid));
+        if(userDoc.exists()){
+          setUser({ uid: userAuth.uid,...userDoc.data() });
+          setShowLanding(false);
+        }
+      } else {
+        setUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); }
   const generateKodeUnik = () => { const kode = 'QUA-' + Math.random().toString(36).substring(2, 8).toUpperCase(); setKodeGenerated(kode); setAuthForm({...authForm, kodeUnik: kode}); }
   const handleImageUpload = (e) => { const file = e.target.files[0]; if(file) setPostImage(URL.createObjectURL(file)); }
 
-  const handleAuth = (e) => {
+  // FUNGSI AUTH UDAH PAKE FIREBASE
+  const handleAuth = async (e) => {
     e.preventDefault(); setError(''); setLoading(true);
-    setTimeout(() => {
+    try {
       if(!authForm.email ||!authForm.password){ setError('Email dan Password wajib diisi!'); setLoading(false); return; }
       if(!isLogin && userType === 'anggota'){
         if(!authForm.nama ||!authForm.umur ||!authForm.bidang ||!authForm.wa ||!authForm.kodeUnik){
@@ -54,14 +83,26 @@ export default function App() {
         }
       }
       if(!isLogin && userType === 'pengunjung' &&!authForm.nama){ setError('Nama wajib diisi!'); setLoading(false); return; }
-      setUser({nama: authForm.nama || authForm.email.split('@')[0], type: userType});
-      showToast(`Selamat datang, ${authForm.nama || authForm.email.split('@')[0]}!`);
-      setLoading(false);
-    }, 1000);
+
+      if(isLogin){
+        await signInWithEmailAndPassword(auth, authForm.email, authForm.password);
+      } else {
+        const userCredential = await createUserWithEmailAndPassword(auth, authForm.email, authForm.password);
+        const user = userCredential.user;
+        await setDoc(doc(db, "users", user.uid), {
+       ...authForm, type: userType, createdAt: serverTimestamp()
+        });
+      }
+      showToast(`Selamat datang!`);
+    } catch (err) {
+      setError(err.message);
+    }
+    setLoading(false);
   }
 
-  const handleLogout = () => {
-    setUser(null); setPage('home'); setShowLanding(true); // BALIK KE LANDING PAS LOGOUT
+  const handleLogout = async () => {
+    await signOut(auth);
+    setUser(null); setPage('home'); setShowLanding(true);
     setAuthForm({nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: '', kodeUnik: ''});
     setKodeGenerated(''); showToast('Logout berhasil');
   }
@@ -86,18 +127,11 @@ export default function App() {
   }
 
   const handleReset = () => { setPostTitle(''); setPostContent(''); setShowResetConfirm(false); setShowSettingPopup(false); showToast('Form direset'); }
-
-  // 1. LANDING PAGE DULU KALO DI WEB
+  // 1. LANDING PAGE
   if (showLanding &&!user) {
     return (
       <div className={`landing-container ${theme} ${mode}`}>
-        
-        {/* BANNER PERINGATAN */}
-        <div className="dev-banner">
-          🚧 PERINGATAN: Website ini masih dalam tahap pengembangan. 
-          Beberapa fitur belum tersedia sepenuhnya. 🚧
-        </div>
-
+        <div className="dev-banner">🚧 PERINGATAN: Website ini masih dalam tahap pengembangan. Beberapa fitur belum tersedia sepenuhnya. 🚧</div>
         <nav className="landing-nav">
           <div className="nav-left"><h1>QUANTA</h1><p>PROJECT</p></div>
           <div className="nav-right"><button className="btn-nav" onClick={() => setShowLanding(false)}>Masuk</button></div>
