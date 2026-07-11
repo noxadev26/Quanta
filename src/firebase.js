@@ -1,11 +1,8 @@
-// Import yang dibutuhin
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-storage.js";
-export const storage = getStorage();
 
-// Kunci Firebase kamu
 const firebaseConfig = {
   apiKey: "AIzaSyAjDgzPe8tUNfYEZDsEIrrZlfc8hu9QlXI",
   authDomain: "quanta---ssi.firebaseapp.com",
@@ -15,9 +12,7 @@ const firebaseConfig = {
   appId: "1:153029053903:web:86cb0636f901fa6394d6ba"
 };
 
-// Nyalain Firebase
 const app = initializeApp(firebaseConfig);
-
-// Biar bisa dipake di App.jsx
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
