@@ -1,46 +1,100 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './App.css';
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState('home');
+  const [isLogin, setIsLogin] = useState(true); // untuk tab login/register
   const [authForm, setAuthForm] = useState({nama: '', email: '', password: ''});
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleAuth = (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
-    setTimeout(() => { // simulasi login
-      setUser({nama: authForm.nama || 'User'});
+
+    // SIMULASI LOGIN/REGISTER - nanti kita sambungin ke database
+    setTimeout(() => {
+      if(!authForm.email ||!authForm.password){
+        setError('Email dan Password wajib diisi!');
+        setLoading(false);
+        return;
+      }
+      setUser({nama: authForm.nama || authForm.email.split('@')[0]});
       setLoading(false);
     }, 1000);
   }
 
-  // KALAU BELUM LOGIN
+  const handleLogout = () => {
+    setUser(null);
+    setAuthForm({nama: '', email: '', password: ''});
+  }
+
+  // ===== HALAMAN LOGIN / REGISTER =====
   if (!user) {
     return (
       <div className="auth-wrapper">
         <div className="glass-box">
           <h1 className="logo-big">QUANTA</h1>
-          <p className="welcome-sub">SELAMAT DATANG</p>
-          
+          <p className="welcome-sub">Platform Kreatif Indonesia</p>
+
+          {/* TAB LOGIN / DAFTAR */}
+          <div className="auth-tabs">
+            <button className={isLogin? 'tab-active' : ''} onClick={() => {setIsLogin(true); setError('')}}>Masuk</button>
+            <button className={!isLogin? 'tab-active' : ''} onClick={() => {setIsLogin(false); setError('')}}>Daftar</button>
+          </div>
+
+          {error && <p className="error-text">{error}</p>}
+
           <form onSubmit={handleAuth}>
-            <input type="text" placeholder="Nama" className="auth-input" value={authForm.nama} onChange={e => setAuthForm({...authForm, nama: e.target.value})} required />
-            <input type="email" placeholder="Email" className="auth-input" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required />
-            <input type="password" placeholder="Password" className="auth-input" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} required />
-            <button className="btn-primary" type="submit" disabled={loading}>{loading? 'Loading...' : 'DAFTAR / MASUK'}</button>
+            {/* INPUT NAMA CUMA MUNCUL KALO DAFTAR */}
+            {!isLogin &&
+              <input
+                type="text"
+                placeholder="Nama Lengkap"
+                className="auth-input"
+                value={authForm.nama}
+                onChange={e => setAuthForm({...authForm, nama: e.target.value})}
+                required
+              />
+            }
+
+            <input
+              type="email"
+              placeholder="Email"
+              className="auth-input"
+              value={authForm.email}
+              onChange={e => setAuthForm({...authForm, email: e.target.value})}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              className="auth-input"
+              value={authForm.password}
+              onChange={e => setAuthForm({...authForm, password: e.target.value})}
+              required
+            />
+
+            <button className="btn-primary" type="submit" disabled={loading}>
+              {loading? 'Loading...' : isLogin? 'MASUK' : 'DAFTAR SEKARANG'}
+            </button>
           </form>
         </div>
       </div>
     );
   }
 
-  // KALAU UDAH LOGIN
+  // ===== HALAMAN UTAMA KALAU UDAH LOGIN =====
   return (
     <div className="app-container">
-      <h1>Halaman {page}</h1> 
-      <p>Selamat datang, {user.nama}!</p>
-      
+      <div className="page-content">
+        <h1>📄 Halaman {page}</h1>
+        <p>Selamat datang, <b>{user.nama}</b>!</p>
+        <button onClick={handleLogout} className="btn-logout">Logout</button>
+      </div>
+
       <BottomNav />
     </div>
   );
@@ -54,7 +108,7 @@ export default function App() {
         <button onClick={() => setPage('cari')} className={`nav-item ${page === 'cari'? 'active' : ''}`}>
           <span>🔍</span>Cari
         </button>
-        <button className="nav-item nav-add">
+        <button onClick={() => setPage('post')} className="nav-item nav-add">
           <span>+</span>
         </button>
         <button onClick={() => setPage('inbox')} className={`nav-item ${page === 'inbox'? 'active' : ''}`}>
@@ -67,3 +121,4 @@ export default function App() {
     );
   }
 }
+export default App;
