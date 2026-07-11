@@ -139,13 +139,13 @@ function DaftarPage({ setPage, showPopup }) {
       if(tipeDaftar === 'anggota') {
         if(!kodeUnik) return showPopup('Kode Belum Ada', 'Klik "Minta Kode Unik" dulu')
         await setDoc(doc(db, "users", res.user.uid), {
-        ...form, isMember: false, status: 'pending', tipe: 'pending anggota',
+       ...form, isMember: false, status: 'pending', tipe: 'pending anggota',
           verificationId: kodeUnik, following: [], followers: [], createdAt: serverTimestamp()
         });
         showPopup('Daftar Berhasil', `ID Verifikasi: ${kodeUnik}\n\nKirim ID ini ke grup komunitas. Admin akan ACC kamu.`)
       } else {
         await setDoc(doc(db, "users", res.user.uid), {
-        ...form, isMember: false, status: 'aktif', tipe: 'pengunjung',
+       ...form, isMember: false, status: 'aktif', tipe: 'pengunjung',
           following: [], followers: [], createdAt: serverTimestamp()
         });
         showPopup('Selamat', 'Daftar Pengunjung Berhasil!')
