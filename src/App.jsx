@@ -30,6 +30,11 @@ export default function App() {
   const [adminTab, setAdminTab] = useState('pending')
   const [users, setUsers] = useState([])
 
+  // STATE POPUP
+  const [popup, setPopup] = useState({ show: false, title: '', message: '' })
+  function showPopup(title, message) { setPopup({ show: true, title, message }) }
+  function closePopup() { setPopup({ show: false, title: '', message: '' }) }
+
   useEffect(() => {
     onAuthStateChanged(auth, async (u) => {
       if(u) {
@@ -56,8 +61,8 @@ export default function App() {
 
   return (
     <div className="container">
-      {page === 'login' && <LoginPage setPage={setPage} />}
-      {page === 'daftar' && <DaftarPage setPage={setPage} />}
+      {page === 'login' && <LoginPage setPage={setPage} showPopup={showPopup} />}
+      {page === 'daftar' && <DaftarPage setPage={setPage} showPopup={showPopup} />}
 
       {user && (
         <>
@@ -70,7 +75,7 @@ export default function App() {
 
           {page === 'beranda' && <BerandaPage setPage={setPage} />}
           {page === 'profil' && <ProfilPage user={user} userData={userData} setPage={setPage} />}
-          {page === 'admin' && isAdmin && <AdminPanel users={users} setPage={setPage} adminTab={adminTab} setAdminTab={setAdminTab} />}
+          {page === 'admin' && isAdmin && <AdminPanel users={users} setPage={setPage} adminTab={adminTab} setAdminTab={setAdminTab} showPopup={showPopup} />}
 
           <div className="navbar">
             <button onClick={() => setPage('beranda')} className={`nav-item ${page==='beranda'?'active':''}`}><span>🏠</span><p>Home</p></button>
@@ -79,12 +84,32 @@ export default function App() {
           </div>
         </>
       )}
+
+      {/* KOMPONEN POPUP */}
+      {popup.show && (
+        <div className="popup-overlay" onClick={closePopup}>
+          <div className="popup-box" onClick={(e) => e.stopPropagation()}>
+            <h3>{popup.title}</h3>
+            <p>{popup.message}</p>
+            <button className="btn-primary" onClick={closePopup}>Oke</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function LoginPage({ setPage }) {
+function LoginPage({ setPage, showPopup }) {
   const [email, setEmail] = useState(''); const [pass, setPass] = useState(''); const [showPass, setShowPass] = useState(false)
+
+  async function handleLogin() {
+    try {
+      await signInWithEmailAndPassword(auth, email, pass)
+    } catch (err) {
+      showPopup('Login Gagal', 'Email atau Password salah')
+    }
+  }
+
   return(
     <div className="auth-wrapper">
       <div className="glass-box">
@@ -92,14 +117,14 @@ function LoginPage({ setPage }) {
         <p className="welcome-sub">Selamat Datang Kembali</p>
         <input className="auth-input" placeholder="Email" onChange={e => setEmail(e.target.value)} />
         <div className="input-password"><input className="auth-input" placeholder="Password" type={showPass? "text" : "password"} onChange={e => setPass(e.target.value)} /><span onClick={() => setShowPass(!showPass)}>👁️</span></div>
-        <button className="btn-primary" onClick={() => signInWithEmailAndPassword(auth, email, pass)}>Masuk</button>
+        <button className="btn-primary" onClick={handleLogin}>Masuk</button>
         <p className="auth-text">Belum punya akun? <span className="link" onClick={() => setPage('daftar')}>Daftar disini</span></p>
       </div>
     </div>
   )
 }
 
-function DaftarPage({ setPage }) {
+function DaftarPage({ setPage, showPopup }) {
   const [form, setForm] = useState({ nama: '', email: '', pass: '', umur: '', bidang: '', domisili: '', wa: '' });
   const [showPass, setShowPass] = useState(false);
   const [tipeDaftar, setTipeDaftar] = useState('pengunjung')
@@ -112,23 +137,27 @@ function DaftarPage({ setPage }) {
   }
 
   async function daftar() {
-    if(!form.nama ||!form.email ||!form.pass ||!form.wa) return alert('Isi semua data wajib *');
+    if(!form.nama ||!form.email ||!form.pass ||!form.wa) return showPopup('Data Kurang', 'Isi semua data wajib *');
 
-    const res = await createUserWithEmailAndPassword(auth, form.email, form.pass);
+    try {
+      const res = await createUserWithEmailAndPassword(auth, form.email, form.pass);
 
-    if(tipeDaftar === 'anggota') {
-      if(!kodeUnik) return alert('Klik "Minta Kode Unik" dulu')
-      await setDoc(doc(db, "users", res.user.uid), {
-      ...form, isMember: false, status: 'pending', tipe: 'pending anggota',
-        verificationId: kodeUnik, following: [], followers: [], createdAt: serverTimestamp()
-      });
-      alert(`Daftar Berhasil!\n\nID Verifikasi: ${kodeUnik}\nKirim ID ini ke grup komunitas. Admin akan ACC kamu.`)
-    } else {
-      await setDoc(doc(db, "users", res.user.uid), {
-      ...form, isMember: false, status: 'aktif', tipe: 'pengunjung',
-        following: [], followers: [], createdAt: serverTimestamp()
-      });
-      alert('Daftar Pengunjung Berhasil!')
+      if(tipeDaftar === 'anggota') {
+        if(!kodeUnik) return showPopup('Kode Belum Ada', 'Klik "Minta Kode Unik" dulu')
+        await setDoc(doc(db, "users", res.user.uid), {
+       ...form, isMember: false, status: 'pending', tipe: 'pending anggota',
+          verificationId: kodeUnik, following: [], followers: [], createdAt: serverTimestamp()
+        });
+        showPopup('Daftar Berhasil', `ID Verifikasi: ${kodeUnik}\n\nKirim ID ini ke grup komunitas. Admin akan ACC kamu.`)
+      } else {
+        await setDoc(doc(db, "users", res.user.uid), {
+       ...form, isMember: false, status: 'aktif', tipe: 'pengunjung',
+          following: [], followers: [], createdAt: serverTimestamp()
+        });
+        showPopup('Selamat', 'Daftar Pengunjung Berhasil!')
+      }
+    } catch(err) {
+      showPopup('Error', err.message)
     }
   }
 
@@ -170,12 +199,12 @@ function DaftarPage({ setPage }) {
   )
 }
 
-function AdminPanel({ users, setPage, adminTab, setAdminTab }) {
+function AdminPanel({ users, setPage, adminTab, setAdminTab, showPopup }) {
   const pendingUsers = users.filter(u => u.status === 'pending')
 
   async function verifikasiUser(uid) {
     await updateDoc(doc(db, "users", uid), { status: 'aktif', isMember: true, tipe: 'admin' })
-    alert('User berhasil diverifikasi!')
+    showPopup('Berhasil', 'User berhasil diverifikasi!')
   }
 
   return(
