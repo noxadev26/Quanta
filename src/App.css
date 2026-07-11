@@ -50,7 +50,7 @@ body {
 .auth-tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   background: #222;
   padding: 6px;
   border-radius: 12px;
@@ -71,6 +71,22 @@ body {
 .auth-tabs .tab-active {
   background: #6366f1;
   color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* PILIHAN TIPE USER: PENGUNJUNG / ANGGOTA */
+.user-type-selector { margin-bottom: 20px; text-align: left; }
+.user-type-selector p { font-size: 13px; color: #aaa; margin-bottom: 10px; font-weight: 600; }
+.type-buttons { display: flex; gap: 10px; }
+.type-buttons button {
+  flex: 1; padding: 12px; background: #2a2a2a; border: 2px solid #333;
+  color: #888; border-radius: 10px; cursor: pointer; font-weight: 600;
+  transition: all 0.3s; font-family: 'Poppins', sans-serif;
+}
+.type-buttons .type-active {
+  background: linear-gradient(90deg, #6366f1, #8b5cf6); 
+  color: white; 
+  border: 2px solid #6366f1;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
@@ -118,6 +134,23 @@ body {
   opacity: 1;
 }
 
+/* BOX KODE UNIK */
+.kode-unik-box { margin: 15px 0; }
+.btn-generate {
+  width: 100%; padding: 12px; background: #1a1a1a; color: #6366f1;
+  border: 2px dashed #6366f1; border-radius: 10px; cursor: pointer;
+  font-weight: 700; transition: all 0.3s; font-family: 'Poppins', sans-serif;
+}
+.btn-generate:hover { background: #6366f1; color: white; transform: scale(1.02); }
+.kode-hasil {
+  background: #111; padding: 14px; border-radius: 10px; margin-top: 12px;
+  font-size: 20px; font-weight: 700; color: #8b5cf6; letter-spacing: 3px;
+  text-align: center; border: 1px solid #333;
+}
+.kode-info {
+  font-size: 11px; color: #aaa; text-align: center; margin-top: 8px; line-height: 1.5;
+}
+
 .btn-primary {
   width: 100%;
   padding: 14px;
@@ -142,7 +175,7 @@ body {
   border-radius: 8px;
   text-align: center;
   font-size: 13px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   border: 1px solid rgba(248, 113, 113, 0.2);
 }
 
