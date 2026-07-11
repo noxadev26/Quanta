@@ -29,9 +29,8 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [adminTab, setAdminTab] = useState('pending')
   const [users, setUsers] = useState([])
-
-  // STATE POPUP
   const [popup, setPopup] = useState({ show: false, title: '', message: '' })
+
   function showPopup(title, message) { setPopup({ show: true, title, message }) }
   function closePopup() { setPopup({ show: false, title: '', message: '' }) }
 
@@ -44,11 +43,9 @@ export default function App() {
         setUserData(data)
         setIsAdmin(data?.isMember === true && data?.status === 'aktif')
         setPage('beranda')
-
         onSnapshot(query(collection(db, "users")), (snap) => {
           setUsers(snap.docs.map(d => ({id: d.id,...d.data()})))
         })
-
       } else {
         setUser(null)
         setPage('login')
@@ -85,7 +82,6 @@ export default function App() {
         </>
       )}
 
-      {/* KOMPONEN POPUP */}
       {popup.show && (
         <div className="popup-overlay" onClick={closePopup}>
           <div className="popup-box" onClick={(e) => e.stopPropagation()}>
@@ -101,15 +97,11 @@ export default function App() {
 
 function LoginPage({ setPage, showPopup }) {
   const [email, setEmail] = useState(''); const [pass, setPass] = useState(''); const [showPass, setShowPass] = useState(false)
-
   async function handleLogin() {
-    try {
-      await signInWithEmailAndPassword(auth, email, pass)
-    } catch (err) {
-      showPopup('Login Gagal', 'Email atau Password salah')
-    }
+    if(!email ||!pass) return showPopup('Data Kurang', 'Email dan Password wajib diisi')
+    try { await signInWithEmailAndPassword(auth, email, pass) }
+    catch (err) { showPopup('Login Gagal', 'Email atau Password salah') }
   }
-
   return(
     <div className="auth-wrapper">
       <div className="glass-box">
@@ -131,34 +123,27 @@ function DaftarPage({ setPage, showPopup }) {
   const [showKode, setShowKode] = useState(false)
   const [kodeUnik, setKodeUnik] = useState('')
 
-  function mintaKode() {
-    setKodeUnik(generateVerificationId())
-    setShowKode(true)
-  }
+  function mintaKode() { setKodeUnik(generateVerificationId()); setShowKode(true) }
 
   async function daftar() {
     if(!form.nama ||!form.email ||!form.pass ||!form.wa) return showPopup('Data Kurang', 'Isi semua data wajib *');
-
     try {
       const res = await createUserWithEmailAndPassword(auth, form.email, form.pass);
-
       if(tipeDaftar === 'anggota') {
         if(!kodeUnik) return showPopup('Kode Belum Ada', 'Klik "Minta Kode Unik" dulu')
         await setDoc(doc(db, "users", res.user.uid), {
-       ...form, isMember: false, status: 'pending', tipe: 'pending anggota',
+        ...form, isMember: false, status: 'pending', tipe: 'pending anggota',
           verificationId: kodeUnik, following: [], followers: [], createdAt: serverTimestamp()
         });
         showPopup('Daftar Berhasil', `ID Verifikasi: ${kodeUnik}\n\nKirim ID ini ke grup komunitas. Admin akan ACC kamu.`)
       } else {
         await setDoc(doc(db, "users", res.user.uid), {
-       ...form, isMember: false, status: 'aktif', tipe: 'pengunjung',
+        ...form, isMember: false, status: 'aktif', tipe: 'pengunjung',
           following: [], followers: [], createdAt: serverTimestamp()
         });
         showPopup('Selamat', 'Daftar Pengunjung Berhasil!')
       }
-    } catch(err) {
-      showPopup('Error', err.message)
-    }
+    } catch(err) { showPopup('Error', err.message) }
   }
 
   return(
@@ -166,24 +151,18 @@ function DaftarPage({ setPage, showPopup }) {
       <div className="glass-box">
         <div className="logo-big">QUANTA</div>
         <p className="welcome-sub">Buat Akun Baru</p>
-
         <div className="tipe-selector">
           <button className={tipeDaftar==='pengunjung'?'active':''} onClick={() => {setTipeDaftar('pengunjung'); setShowKode(false)}}>Pengunjung</button>
           <button className={tipeDaftar==='anggota'?'active':''} onClick={() => setTipeDaftar('anggota')}>Anggota</button>
         </div>
-
-        {tipeDaftar === 'anggota' &&!showKode && (
-          <button className="btn-kode" onClick={mintaKode}>Minta Kode Unik</button>
-        )}
-
+        {tipeDaftar === 'anggota' &&!showKode && <button className="btn-kode" onClick={mintaKode}>Minta Kode Unik</button>}
         {tipeDaftar === 'anggota' && showKode && (
           <div className="verification-box">
-            <p><b>ID Verifikasi Anggota:</b></p>
+            <p><b>ID Verifikasi Anggota</b></p>
             <h3>{kodeUnik}</h3>
-            <small>Kirim ID ini ke grup komunitas untuk verifikasi. Setelah di ACC admin baru bisa login sebagai anggota.</small>
+            <small>Kirim ID ini ke grup komunitas<br/>Admin akan ACC dalam 1x24 jam</small>
           </div>
         )}
-
         <input className="auth-input" placeholder="Nama Lengkap *" onChange={e => setForm({...form, nama: e.target.value})} />
         <input className="auth-input" placeholder="Email *" onChange={e => setForm({...form, email: e.target.value})} />
         <div className="input-password"><input className="auth-input" placeholder="Password *" type={showPass? "text" : "password"} onChange={e => setForm({...form, pass: e.target.value})} /><span onClick={() => setShowPass(!showPass)}>👁️</span></div>
@@ -191,7 +170,6 @@ function DaftarPage({ setPage, showPopup }) {
         <input className="auth-input" placeholder="Umur *" type="number" onChange={e => setForm({...form, umur: e.target.value})} />
         <input className="auth-input" placeholder="Bidang Studi *" onChange={e => setForm({...form, bidang: e.target.value})} />
         <input className="auth-input" placeholder="Domisili *" onChange={e => setForm({...form, domisili: e.target.value})} />
-
         <button className="btn-primary" onClick={daftar}>Daftar Sekarang</button>
         <p className="auth-text">Sudah punya akun? <span className="link" onClick={() => setPage('login')}>Masuk</span></p>
       </div>
@@ -201,12 +179,10 @@ function DaftarPage({ setPage, showPopup }) {
 
 function AdminPanel({ users, setPage, adminTab, setAdminTab, showPopup }) {
   const pendingUsers = users.filter(u => u.status === 'pending')
-
   async function verifikasiUser(uid) {
     await updateDoc(doc(db, "users", uid), { status: 'aktif', isMember: true, tipe: 'admin' })
     showPopup('Berhasil', 'User berhasil diverifikasi!')
   }
-
   return(
     <div className="admin-container">
       <div className="admin-sidebar">
@@ -215,7 +191,6 @@ function AdminPanel({ users, setPage, adminTab, setAdminTab, showPopup }) {
         <button className={adminTab==='akun'?'active':''} onClick={() => setAdminTab('akun')}>👥 Semua Akun</button>
         <button onClick={() => setPage('beranda')}>← Kembali</button>
       </div>
-
       <div className="admin-content">
         {adminTab === 'pending' && (
           <div>
@@ -233,11 +208,7 @@ function AdminPanel({ users, setPage, adminTab, setAdminTab, showPopup }) {
         {adminTab === 'akun' && (
           <div>
             <h2>Semua Akun</h2>
-            {users.map(u => (
-              <div className="admin-card" key={u.id}>
-                <p><b>{u.nama}</b> - {u.tipe} - {u.status}</p>
-              </div>
-            ))}
+            {users.map(u => (<div className="admin-card" key={u.id}><p><b>{u.nama}</b> - {u.tipe} - {u.status}</p></div>))}
           </div>
         )}
       </div>
@@ -246,7 +217,7 @@ function AdminPanel({ users, setPage, adminTab, setAdminTab, showPopup }) {
 }
 
 function BerandaPage({ setPage }) {
-  return <div className="content"><h2>Beranda Quanta</h2></div>
+  return <div className="content"><h2>Beranda Quanta</h2><p>Selamat datang di Quanta</p></div>
 }
 function ProfilPage({ user, userData, setPage }) {
   return(
@@ -256,6 +227,7 @@ function ProfilPage({ user, userData, setPage }) {
         <div className="avatar-big">{userData?.nama?.split(' ').map(n=>n[0]).join('')}</div>
         <h3>{userData?.nama}</h3>
         <p className="profil-status">{userData?.tipe}</p>
+        <p style={{color:'#888', fontSize:'13px'}}>{userData?.email}</p>
         <button className="btn-logout" onClick={() => signOut(auth)}>Keluar</button>
       </div>
     </div>
