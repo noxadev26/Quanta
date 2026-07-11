@@ -1,248 +1,71 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
 * { box-sizing: border-box; }
-
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
-  color: white;
+  background: #0D1117;
+  color: #E6EDF3;
   min-height: 100vh;
 }
 .app-container { padding: 20px; padding-bottom: 90px; }
 .page-content { text-align: center; padding-top: 50px; }
 
-/* ===== LOGIN & REGISTER ===== */
-.auth-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
-}
+.auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
 .glass-box {
-  background: rgba(26, 26, 26, 0.8);
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 20px;
-  width: 100%;
-  max-width: 420px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  max-height: 90vh;
-  overflow-y: auto;
+  background: #161B22; padding: 30px 25px; border-radius: 16px; width: 100%; max-width: 400px;
+  border: 1px solid #30363D; box-shadow: 0 0 30px rgba(88, 101, 242, 0.15); max-height: 90vh; overflow-y: auto;
 }
-.logo-big {
-  text-align: center;
-  font-size: 40px;
-  color: #6366f1;
-  margin: 0 0 10px 0;
-  font-weight: 700;
-}
-.welcome-sub {
-  text-align: center;
-  color: #888;
-  margin-bottom: 25px;
-  font-size: 14px;
-}
+.welcome-top { text-align: center; color: #8B949E; margin: 0; font-size: 14px; letter-spacing: 2px; }
+.logo-big { text-align: center; font-size: 36px; color: #5865F2; margin: 5px 0; font-weight: 700; letter-spacing: 3px; }
+.welcome-sub { text-align: center; color: #8B949E; margin: 0 0 20px 0; font-size: 14px; letter-spacing: 4px; font-weight: 400; }
+.section-title { text-align: center; color: #E6EDF3; margin-bottom: 20px; font-size: 16px; font-weight: 600; }
 
-/* TAB LOGIN/DAFTAR */
-.auth-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  background: #222;
-  padding: 6px;
-  border-radius: 12px;
-}
-.auth-tabs button {
-  flex: 1;
-  padding: 10px;
-  background: transparent;
-  border: none;
-  color: #888;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-family: 'Poppins', sans-serif;
-  font-size: 15px;
-}
-.auth-tabs .tab-active {
-  background: #6366f1;
-  color: white;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-}
+.auth-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #0D1117; padding: 6px; border-radius: 10px; }
+.auth-tabs button { flex: 1; padding: 10px; background: transparent; border: none; color: #8B949E; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+.auth-tabs.tab-active { background: #5865F2; color: white; }
 
-/* PILIHAN TIPE USER: PENGUNJUNG / ANGGOTA */
 .user-type-selector { margin-bottom: 20px; text-align: left; }
-.user-type-selector p { font-size: 13px; color: #aaa; margin-bottom: 10px; font-weight: 600; }
+.user-type-selector p { font-size: 13px; color: #8B949E; margin-bottom: 10px; font-weight: 600; }
 .type-buttons { display: flex; gap: 10px; }
 .type-buttons button {
-  flex: 1; padding: 12px; background: #2a2a2a; border: 2px solid #333;
-  color: #888; border-radius: 10px; cursor: pointer; font-weight: 600;
-  transition: all 0.3s; font-family: 'Poppins', sans-serif;
+  flex: 1; padding: 12px; background: #0D1117; border: 1px solid #30363D;
+  color: #8B949E; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s;
 }
-.type-buttons .type-active {
-  background: linear-gradient(90deg, #6366f1, #8b5cf6); 
-  color: white; 
-  border: 2px solid #6366f1;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-}
+.type-buttons.type-active { background: #5865F2; color: white; border: 1px solid #5865F2; }
 
-/* INPUT & BUTTON */
 .auth-input {
-  width: 100%;
-  padding: 14px;
-  margin: 10px 0;
-  background: #2a2a2a;
-  border: 1px solid #333;
-  color: white;
-  border-radius: 10px;
-  font-family: 'Poppins', sans-serif;
-  font-size: 14px;
-  transition: border 0.3s;
+  width: 100%; padding: 14px 16px; margin: 10px 0; background: #0D1117; border: 1px solid #30363D;
+  color: #E6EDF3; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 14px; transition: all 0.3s;
 }
-.auth-input:focus {
-  outline: none;
-  border: 1px solid #6366f1;
-}
-.auth-input::placeholder {
-  color: #666;
-}
+.auth-input:focus { outline: none; border: 1px solid #5865F2; box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.2); }
+.auth-input::placeholder { color: #8B949E; }
 
-/* PASSWORD DENGAN ICON MATA */
-.password-wrapper {
-  position: relative;
-  width: 100%;
-}
-.password-wrapper .auth-input {
-  padding-right: 45px;
-}
-.eye-icon {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 20px;
-  user-select: none;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-.eye-icon:hover {
-  opacity: 1;
-}
+.password-wrapper { position: relative; width: 100%; }
+.password-wrapper.auth-input { padding-right: 45px; }
+.eye-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 18px; opacity: 0.6; }
 
-/* BOX KODE UNIK */
-.kode-unik-box { margin: 15px 0; }
-.btn-generate {
-  width: 100%; padding: 12px; background: #1a1a1a; color: #6366f1;
-  border: 2px dashed #6366f1; border-radius: 10px; cursor: pointer;
-  font-weight: 700; transition: all 0.3s; font-family: 'Poppins', sans-serif;
-}
-.btn-generate:hover { background: #6366f1; color: white; transform: scale(1.02); }
-.kode-hasil {
-  background: #111; padding: 14px; border-radius: 10px; margin-top: 12px;
-  font-size: 20px; font-weight: 700; color: #8b5cf6; letter-spacing: 3px;
-  text-align: center; border: 1px solid #333;
-}
-.kode-info {
-  font-size: 11px; color: #aaa; text-align: center; margin-top: 8px; line-height: 1.5;
-}
+.kode-unik-box { margin: 20px 0; padding: 20px; background: #0D1117; border: 1px dashed #5865F2; border-radius: 12px; text-align: center; }
+.kode-unik-box h3 { margin: 0 0 10px 0; font-size: 14px; }
+.btn-generate { width: 100%; padding: 12px; background: #21262D; color: #5865F2; border: 1px solid #30363D; border-radius: 8px; cursor: pointer; font-weight: 600; margin-bottom: 10px; }
+.kode-hasil { font-size: 22px; font-weight: 700; color: #5865F2; letter-spacing: 3px; margin: 8px 0; }
+.kode-info { font-size: 11px; color: #8B949E; line-height: 1.5; }
 
 .btn-primary {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 15px;
-  font-size: 16px;
-  transition: transform 0.2s;
-  font-family: 'Poppins', sans-serif;
+  width: 100%; padding: 14px; background: #5865F2; color: white; border: none; border-radius: 10px;
+  font-weight: 700; cursor: pointer; margin-top: 15px; font-size: 16px; transition: all 0.3s;
 }
-.btn-primary:active { transform: scale(0.98); }
+.btn-primary:hover { background: #4752C4; transform: translateY(-1px); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.error-text {
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.1);
-  padding: 10px;
-  border-radius: 8px;
-  text-align: center;
-  font-size: 13px;
-  margin-bottom: 15px;
-  border: 1px solid rgba(248, 113, 113, 0.2);
-}
+.error-text { color: #f87171; background: rgba(248, 113, 113, 0.1); padding: 10px; border-radius: 8px; text-align: center; font-size: 13px; margin-bottom: 15px; }
+.link-text { text-align: center; margin-top: 20px; font-size: 14px; color: #8B949E; }
+.link-text a { color: #5865F2; text-decoration: none; font-weight: 600; }
 
-.btn-logout {
-  padding: 10px 20px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 20px;
-  font-family: 'Poppins', sans-serif;
-}
+.btn-logout { padding: 10px 20px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 20px; }
 
-/* SCROLLBAR CANTIK BUAT FORM PANJANG */
-.glass-box::-webkit-scrollbar {
-  width: 6px;
-}
-.glass-box::-webkit-scrollbar-thumb {
-  background: #6366f1;
-  border-radius: 10px;
-}
-
-/* ===== NAVBAR BAWAH ===== */
-.navbar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-around;
-  background: rgba(26, 26, 26, 0.9);
-  backdrop-filter: blur(10px);
-  padding: 10px 0;
-  border-top: 1px solid #333;
-  z-index: 100;
-}
-.nav-item {
-  background: none;
-  border: none;
-  color: #888;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 11px;
-  gap: 4px;
-  cursor: pointer;
-  flex: 1;
-  font-family: 'Poppins', sans-serif;
-  transition: color 0.3s;
-}
-.nav-item.active {
-  color: #6366f1;
-  font-weight: 600;
-}
-.nav-item span {
-  font-size: 24px;
-}
-.nav-add {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: white;
-  border-radius: 50%;
-  width: 55px;
-  height: 55px;
-  font-size: 28px;
-  margin-top: -22px;
-  border: 4px solid #0a0a0a;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-}
+.navbar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: #161B22; padding: 10px 0; border-top: 1px solid #30363D; z-index: 100; }
+.nav-item { background: none; border: none; color: #8B949E; display: flex; flex-direction: column; align-items: center; font-size: 11px; gap: 4px; cursor: pointer; flex: 1; }
+.nav-item.active { color: #5865F2; font-weight: 600; }
+.nav-item span { font-size: 24px; }
+.nav-add { background: #5865F2; color: white; border-radius: 50%; width: 55px; height: 55px; font-size: 28px; margin-top: -22px; border: 4px solid #0D1117; }
