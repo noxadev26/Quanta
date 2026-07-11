@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState('home');
   const [isLogin, setIsLogin] = useState(true);
-  const [userType, setUserType] = useState('pengunjung'); // pengunjung / anggota
+  const [userType, setUserType] = useState('pengunjung');
   const [showPassword, setShowPassword] = useState(false);
+  const [theme, setTheme] = useState('glassmorphic');
+  const [mode, setMode] = useState('gelap');
+  const [animation, setAnimation] = useState(true);
 
   const [authForm, setAuthForm] = useState({
     nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: '', kodeUnik: ''
@@ -14,6 +17,14 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [kodeGenerated, setKodeGenerated] = useState('');
+
+  const [posts, setPosts] = useState([]);
+  const [postTitle, setPostTitle] = useState('');
+  const [postContent, setPostContent] = useState('');
+  const [postSettings, setPostSettings] = useState({ like: true, comment: true, tampil: 'semua' });
+  const [showSettingPopup, setShowSettingPopup] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const generateKodeUnik = () => {
     const kode = 'QUA-' + Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -25,56 +36,51 @@ export default function App() {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     setTimeout(() => {
-      if(!authForm.email ||!authForm.password){
-        setError('Email dan Password wajib diisi!');
-        setLoading(false);
-        return;
-      }
+      if(!authForm.email ||!authForm.password){ setError('Email dan Password wajib diisi!'); setLoading(false); return; }
       if(!isLogin && userType === 'anggota'){
         if(!authForm.nama ||!authForm.umur ||!authForm.bidang ||!authForm.wa ||!authForm.kodeUnik){
-          setError('Semua data Anggota wajib diisi + Generate Kode Unik!');
-          setLoading(false);
-          return;
+          setError('Semua data Anggota wajib diisi + Generate Kode Unik!'); setLoading(false); return;
         }
       }
-      if(!isLogin && userType === 'pengunjung' &&!authForm.nama){
-        setError('Nama wajib diisi!');
-        setLoading(false);
-        return;
-      }
+      if(!isLogin && userType === 'pengunjung' &&!authForm.nama){ setError('Nama wajib diisi!'); setLoading(false); return; }
       setUser({nama: authForm.nama || authForm.email.split('@')[0], type: userType});
       setLoading(false);
     }, 1000);
   }
 
   const handleLogout = () => {
-    setUser(null);
+    setUser(null); setPage('home');
     setAuthForm({nama: '', umur: '', domisili: '', bidang: '', wa: '', email: '', password: '', kodeUnik: ''});
     setKodeGenerated('');
   }
 
+  const handlePost = () => {
+    if(!postTitle ||!postContent){ alert('Judul dan Isi wajib diisi!'); return; }
+    const newPost = { id: Date.now(), title: postTitle, content: postContent, author: user.nama, settings: postSettings };
+    setPosts([newPost,...posts]);
+    setPostTitle(''); setPostContent('');
+    setPage('home');
+  }
+
+  const handleReset = () => {
+    setPostTitle(''); setPostContent('');
+    setShowResetConfirm(false); setShowSettingPopup(false);
+  }
+
   if (!user) {
     return (
-      <div className="auth-wrapper">
+      <div className={`auth-wrapper ${theme} ${mode}`}>
         <div className="glass-box">
           <p className="welcome-top">Welcome to</p>
           <h1 className="logo-big">QUANTA</h1>
           <p className="welcome-sub">PROJECT</p>
-
-          <p className="section-title">{isLogin? '' : userType === 'anggota'? 'Buat Akun Anggota' : 'Buat Akun Pengunjung'}</p>
-
           <div className="auth-tabs">
             <button className={isLogin? 'tab-active' : ''} onClick={() => {setIsLogin(true); setError('')}}>Masuk</button>
             <button className={!isLogin? 'tab-active' : ''} onClick={() => {setIsLogin(false); setError('')}}>Daftar</button>
           </div>
-
           {error && <p className="error-text">{error}</p>}
-
           <form onSubmit={handleAuth}>
-
-            {/* PILIHAN TIPE AKUN */}
             {!isLogin && (
               <div className="user-type-selector">
                 <p>Pilih Tipe Akun:</p>
@@ -84,33 +90,25 @@ export default function App() {
                 </div>
               </div>
             )}
-
-            {/* FORM ANGGOTA */}
             {!isLogin && userType === 'anggota' && (
               <>
                 <input type="text" placeholder="Nama Lengkap *" className="auth-input" value={authForm.nama} onChange={e => setAuthForm({...authForm, nama: e.target.value})} required />
                 <input type="email" placeholder="Email *" className="auth-input" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required />
-
                 <div className="password-wrapper">
                   <input type={showPassword? 'text' : 'password'} placeholder="Password *" className="auth-input" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} required />
                   <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>{showPassword? '🙈' : '👁️'}</span>
                 </div>
-
                 <input type="tel" placeholder="No. WhatsApp *" className="auth-input" value={authForm.wa} onChange={e => setAuthForm({...authForm, wa: e.target.value})} required />
                 <input type="number" placeholder="Umur *" className="auth-input" value={authForm.umur} onChange={e => setAuthForm({...authForm, umur: e.target.value})} required />
                 <input type="text" placeholder="Bidang Studi *" className="auth-input" value={authForm.bidang} onChange={e => setAuthForm({...authForm, bidang: e.target.value})} required />
                 <input type="text" placeholder="Domisili *" className="auth-input" value={authForm.domisili} onChange={e => setAuthForm({...authForm, domisili: e.target.value})} required />
-
                 <div className="kode-unik-box">
                   <h3>ID Verifikasi Anggota:</h3>
                   <button type="button" className="btn-generate" onClick={generateKodeUnik}>Generate ID</button>
                   {kodeGenerated && <div className="kode-hasil">{kodeGenerated}</div>}
-                  <p className="kode-info">ID ini akan dipakai saat kamu daftar sebagai anggota. Berikan ke admin grup untuk verifikasi</p>
                 </div>
               </>
             )}
-
-            {/* FORM PENGUNJUNG */}
             {!isLogin && userType === 'pengunjung' && (
               <>
                 <input type="text" placeholder="Nama *" className="auth-input" value={authForm.nama} onChange={e => setAuthForm({...authForm, nama: e.target.value})} required />
@@ -121,8 +119,6 @@ export default function App() {
                 </div>
               </>
             )}
-
-            {/* FORM LOGIN */}
             {isLogin && (
               <>
                 <input type="email" placeholder="Email" className="auth-input" value={authForm.email} onChange={e => setAuthForm({...authForm, email: e.target.value})} required />
@@ -132,17 +128,7 @@ export default function App() {
                 </div>
               </>
             )}
-
-            <button className="btn-primary" type="submit" disabled={loading}>
-              {loading? 'Loading...' : isLogin? 'Masuk' : 'Daftar Sekarang'}
-            </button>
-
-            <p className="link-text">
-              {isLogin? 'Belum punya akun? ' : 'Sudah punya akun? '}
-              <a href="#" onClick={(e) => {e.preventDefault(); setIsLogin(!isLogin)}}>
-                {isLogin? 'Daftar disini' : 'Masuk'}
-              </a>
-            </p>
+            <button className="btn-primary" type="submit" disabled={loading}>{loading? 'Loading...' : isLogin? 'Masuk' : 'Daftar Sekarang'}</button>
           </form>
         </div>
       </div>
@@ -150,18 +136,139 @@ export default function App() {
   }
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${theme} ${mode} ${animation? 'anim' : ''}`}>
+      <TopNavbar page={page} onRefresh={() => window.location.reload()} />
+
       <div className="page-content">
-        <h1>📄 Halaman {page}</h1>
-        <p>Selamat datang, <b>{user.nama}</b>!</p>
-        <p>Tipe Akun: <b>{user.type}</b></p>
-        <button onClick={handleLogout} className="btn-logout">Logout</button>
+        {page === 'home' && (
+          <>
+            <h2>Beranda</h2>
+            {posts.length === 0? <p>Belum ada postingan</p> :
+              posts.map(p => (
+                <div key={p.id} className="post-card">
+                  <h3>{p.title}</h3>
+                  <p>{p.content}</p>
+                  <small>Oleh: {p.author}</small>
+                </div>
+              ))
+            }
+          </>
+        )}
+        {page === 'cari' && <h2>🔍 Halaman Cari</h2>}
+        {page === 'post' && (
+          <div className="post-page">
+            <div className="top-nav-small">
+              <h3>Posting</h3>
+              <button className="icon-btn" onClick={() => setShowSettingPopup(true)}>⚙️</button>
+            </div>
+            <input type="text" placeholder="Judul Postingan" className="auth-input" value={postTitle} onChange={e => setPostTitle(e.target.value)} />
+            <textarea placeholder="Isi Postingan..." className="auth-input textarea" value={postContent} onChange={e => setPostContent(e.target.value)} rows="6"></textarea>
+            <button className="btn-primary" onClick={handlePost}>Posting</button>
+          </div>
+        )}
+        {page === 'inbox' && <h2>💬 [COMING SOON]</h2>}
+        {page === 'profil' && (
+          <div className="profil-page">
+            <div className="top-nav-small">
+              <button className="icon-btn" onClick={() => setShowSidebar(true)}>☰</button>
+              <h3>Profil</h3>
+              <button className="icon-btn" onClick={() => setPage('pengaturan')}>⚙️</button>
+            </div>
+            <p>Nama: {user.nama}</p>
+            <p>Tipe: {user.type}</p>
+            <button onClick={handleLogout} className="btn-logout">Logout</button>
+          </div>
+        )}
+        {page === 'pengaturan' && (
+          <div className="setting-page">
+            <h2>Pengaturan Website</h2>
+            <div className="setting-group">
+              <h4>Theme</h4>
+              <select value={theme} onChange={e => setTheme(e.target.value)} className="auth-input">
+                <option value="glassmorphic">Glassmorphic</option>
+                <option value="basic">Basic</option>
+              </select>
+              <select value={mode} onChange={e => setMode(e.target.value)} className="auth-input">
+                <option value="gelap">Gelap</option>
+                <option value="terang">Terang</option>
+              </select>
+              <label><input type="checkbox" checked={animation} onChange={e => setAnimation(e.target.checked)} /> Tampilkan Animasi</label>
+            </div>
+            <div className="setting-group">
+              <h4>Keamanan</h4>
+              <button className="btn-secondary">Privat Akun</button>
+              <button className="btn-secondary">Edit Password & Email</button>
+            </div>
+            <div className="setting-group">
+              <h4>Akun</h4>
+              <button className="btn-secondary">Edit Profil</button>
+              <button className="btn-secondary">Ganti Nama</button>
+              <button className="btn-secondary">Edit Bio</button>
+              <button className="btn-secondary">Ganti Foto Profil</button>
+              <button className="btn-secondary">Notifikasi</button>
+              <button className="btn-secondary">Bahasa</button>
+            </div>
+            <button className="btn-primary" onClick={() => setPage('profil')}>Kembali</button>
+          </div>
+        )}
       </div>
-      <BottomNav />
+
+      <BottomNav page={page} setPage={setPage} />
+
+      {showSidebar && (
+        <div className="popup-overlay" onClick={() => setShowSidebar(false)}>
+          <div className="popup-box"><p>[Coming soon]</p></div>
+        </div>
+      )}
+
+      {showSettingPopup && (
+        <div className="popup-overlay">
+          <div className="popup-box">
+            <div className="popup-header">
+              <h3>Pengaturan Postingan</h3>
+              <button className="icon-btn-small" onClick={() => setShowSettingPopup(false)}>X</button>
+            </div>
+            <label><input type="checkbox" checked={postSettings.like} onChange={e => setPostSettings({...postSettings, like: e.target.checked})} /> Izinkan Like</label>
+            <label><input type="checkbox" checked={postSettings.comment} onChange={e => setPostSettings({...postSettings, comment: e.target.checked})} /> Izinkan Comment</label>
+            <label>Tampilkan pada:
+              <select value={postSettings.tampil} onChange={e => setPostSettings({...postSettings, tampil: e.target.value})} className="auth-input">
+                <option value="semua">Pengunjung & Anggota</option>
+                <option value="pengunjung">Pengunjung</option>
+                <option value="anggota">Anggota</option>
+              </select>
+            </label>
+            <button className="btn-danger" onClick={() => setShowResetConfirm(true)}>Reset Postingan</button>
+          </div>
+        </div>
+      )}
+
+      {showResetConfirm && (
+        <div className="popup-overlay">
+          <div className="popup-box">
+            <p>Yakin reset postingan?</p>
+            <div className="popup-buttons">
+              <button className="btn-primary" onClick={handleReset}>✓</button>
+              <button className="btn-secondary" onClick={() => {setShowResetConfirm(false); setShowSettingPopup(false)}}>X</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
-  function BottomNav() {
+  function TopNavbar({ page, onRefresh }) {
+    return (
+      <nav className="top-navbar">
+        <div>
+          <h1>Quanta Project</h1>
+          <p>made by SSI</p>
+        </div>
+        <button className="icon-btn" onClick={onRefresh}>🔄</button>
+      </nav>
+    )
+  }
+
+  function BottomNav({ page, setPage }) {
     return (
       <nav className="navbar">
         <button onClick={() => setPage('home')} className={`nav-item ${page === 'home'? 'active' : ''}`}><span>🏠</span>Home</button>
