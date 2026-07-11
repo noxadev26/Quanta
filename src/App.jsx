@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { initializeApp } from 'firebase/app'
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth'
-import { getFirestore, collection, query, orderBy, where, getDocs, doc, getDoc, setDoc, addDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, onSnapshot, deleteDoc } from 'firebase/firestore'
+import { getFirestore, collection, query, doc, getDoc, setDoc, serverTimestamp, updateDoc, onSnapshot } from 'firebase/firestore'
 import './App.css'
 
 const firebaseConfig = {
@@ -23,6 +23,7 @@ function generateVerificationId() {
 
 export default function App() {
   const [page, setPage] = useState('login')
+  const [activeTab, setActiveTab] = useState('beranda')
   const [user, setUser] = useState(null)
   const [userData, setUserData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -31,11 +32,11 @@ export default function App() {
   const [users, setUsers] = useState([])
   const [popup, setPopup] = useState({ show: false, title: '', message: '' })
 
-  function showPopup(title, message) { setPopup({ show: true, title, message }) }
-  function closePopup() { setPopup({ show: false, title: '', message: '' }) }
+  const showPopup = (title, message) => setPopup({ show: true, title, message })
+  const closePopup = () => setPopup({ show: false, title: '', message: '' })
 
   useEffect(() => {
-    onAuthStateChanged(auth, async (u) => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
       if(u) {
         setUser(u)
         const userDoc = await getDoc(doc(db, "users", u.uid))
@@ -52,6 +53,7 @@ export default function App() {
       }
       setLoading(false)
     })
+    return () => unsub()
   }, [])
 
   if(loading) return <div className="loading-full"><div className="loader"></div></div>
@@ -63,21 +65,26 @@ export default function App() {
 
       {user && (
         <>
-          {page!== 'profil' && (
+          {page!== 'profil' && page!== 'cari' && page!== 'inbox' && page!== 'post' && (
             <div className="header">
-              <div className="logo" onClick={() => setPage('beranda')}>QUANTA <span>made by SSI</span></div>
+              <div className="logo" onClick={() => {setPage('beranda'); setActiveTab('beranda')}}>QUANTA <span>made by SSI</span></div>
               {isAdmin && <button className="icon-btn" onClick={() => setPage('admin')}>🛡️</button>}
             </div>
           )}
 
-          {page === 'beranda' && <BerandaPage setPage={setPage} />}
+          {page === 'beranda' && <BerandaPage />}
+          {page === 'cari' && <CariPage users={users} />}
+          {page === 'post' && <PostPage showPopup={showPopup} setPage={setPage} />}
+          {page === 'inbox' && <InboxPage />}
           {page === 'profil' && <ProfilPage user={user} userData={userData} setPage={setPage} />}
           {page === 'admin' && isAdmin && <AdminPanel users={users} setPage={setPage} adminTab={adminTab} setAdminTab={setAdminTab} showPopup={showPopup} />}
 
           <div className="navbar">
-            <button onClick={() => setPage('beranda')} className={`nav-item ${page==='beranda'?'active':''}`}><span>🏠</span><p>Home</p></button>
-            <button className={`nav-item nav-add`}><span>➕</span></button>
-            <button onClick={() => setPage('profil')} className={`nav-item ${page==='profil'?'active':''}`}><span>👤</span><p>Profil</p></button>
+            <button onClick={() => {setPage('beranda'); setActiveTab('beranda')}} className={`nav-item ${activeTab==='beranda'?'active':''}`}><span>🏠</span><p>Beranda</p></button>
+            <button onClick={() => {setPage('cari'); setActiveTab('cari')}} className={`nav-item ${activeTab==='cari'?'active':''}`}><span>🔍</span><p>Cari</p></button>
+            <button onClick={() => {setPage('post'); setActiveTab('post')}} className={`nav-item nav-add`}><span>➕</span></button>
+            <button onClick={() => {setPage('inbox'); setActiveTab('inbox')}} className={`nav-item ${activeTab==='inbox'?'active':''}`}><span>💬</span><p>Inbox</p></button>
+            <button onClick={() => {setPage('profil'); setActiveTab('profil')}} className={`nav-item ${activeTab==='profil'?'active':''}`}><span>👤</span><p>Profil</p></button>
           </div>
         </>
       )}
@@ -97,8 +104,8 @@ export default function App() {
 
 function LoginPage({ setPage, showPopup }) {
   const [email, setEmail] = useState(''); const [pass, setPass] = useState(''); const [showPass, setShowPass] = useState(false)
-  async function handleLogin() {
-    if(!email ||!pass) return showPopup('Data Kurang', 'Email dan Password wajib diisi')
+  const handleLogin = async () => {
+    if(!email ||!pass) return showPopup('Gagal', 'Email dan Password wajib diisi')
     try { await signInWithEmailAndPassword(auth, email, pass) }
     catch (err) { showPopup('Login Gagal', 'Email atau Password salah') }
   }
@@ -107,8 +114,8 @@ function LoginPage({ setPage, showPopup }) {
       <div className="glass-box">
         <div className="logo-big">QUANTA</div>
         <p className="welcome-sub">Selamat Datang Kembali</p>
-        <input className="auth-input" placeholder="Email" onChange={e => setEmail(e.target.value)} />
-        <div className="input-password"><input className="auth-input" placeholder="Password" type={showPass? "text" : "password"} onChange={e => setPass(e.target.value)} /><span onClick={() => setShowPass(!showPass)}>👁️</span></div>
+        <input className="auth-input" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
+        <div className="input-password"><input className="auth-input" placeholder="Password" type={showPass? "text" : "password"} value={pass} onChange={e => setPass(e.target.value)} /><span onClick={() => setShowPass(!showPass)}>👁️</span></div>
         <button className="btn-primary" onClick={handleLogin}>Masuk</button>
         <p className="auth-text">Belum punya akun? <span className="link" onClick={() => setPage('daftar')}>Daftar disini</span></p>
       </div>
@@ -123,22 +130,22 @@ function DaftarPage({ setPage, showPopup }) {
   const [showKode, setShowKode] = useState(false)
   const [kodeUnik, setKodeUnik] = useState('')
 
-  function mintaKode() { setKodeUnik(generateVerificationId()); setShowKode(true) }
+  const mintaKode = () => { setKodeUnik(generateVerificationId()); setShowKode(true) }
 
-  async function daftar() {
+  const daftar = async () => {
     if(!form.nama ||!form.email ||!form.pass ||!form.wa) return showPopup('Data Kurang', 'Isi semua data wajib *');
     try {
       const res = await createUserWithEmailAndPassword(auth, form.email, form.pass);
       if(tipeDaftar === 'anggota') {
         if(!kodeUnik) return showPopup('Kode Belum Ada', 'Klik "Minta Kode Unik" dulu')
         await setDoc(doc(db, "users", res.user.uid), {
-       ...form, isMember: false, status: 'pending', tipe: 'pending anggota',
+        ...form, isMember: false, status: 'pending', tipe: 'pending anggota',
           verificationId: kodeUnik, following: [], followers: [], createdAt: serverTimestamp()
         });
         showPopup('Daftar Berhasil', `ID Verifikasi: ${kodeUnik}\n\nKirim ID ini ke grup komunitas. Admin akan ACC kamu.`)
       } else {
         await setDoc(doc(db, "users", res.user.uid), {
-       ...form, isMember: false, status: 'aktif', tipe: 'pengunjung',
+        ...form, isMember: false, status: 'aktif', tipe: 'pengunjung',
           following: [], followers: [], createdAt: serverTimestamp()
         });
         showPopup('Selamat', 'Daftar Pengunjung Berhasil!')
@@ -163,13 +170,13 @@ function DaftarPage({ setPage, showPopup }) {
             <small>Kirim ID ini ke grup komunitas<br/>Admin akan ACC dalam 1x24 jam</small>
           </div>
         )}
-        <input className="auth-input" placeholder="Nama Lengkap *" onChange={e => setForm({...form, nama: e.target.value})} />
-        <input className="auth-input" placeholder="Email *" onChange={e => setForm({...form, email: e.target.value})} />
-        <div className="input-password"><input className="auth-input" placeholder="Password *" type={showPass? "text" : "password"} onChange={e => setForm({...form, pass: e.target.value})} /><span onClick={() => setShowPass(!showPass)}>👁️</span></div>
-        <input className="auth-input" placeholder="No. WhatsApp *" onChange={e => setForm({...form, wa: e.target.value})} />
-        <input className="auth-input" placeholder="Umur *" type="number" onChange={e => setForm({...form, umur: e.target.value})} />
-        <input className="auth-input" placeholder="Bidang Studi *" onChange={e => setForm({...form, bidang: e.target.value})} />
-        <input className="auth-input" placeholder="Domisili *" onChange={e => setForm({...form, domisili: e.target.value})} />
+        <input className="auth-input" placeholder="Nama Lengkap *" value={form.nama} onChange={e => setForm({...form, nama: e.target.value})} />
+        <input className="auth-input" placeholder="Email *" value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
+        <div className="input-password"><input className="auth-input" placeholder="Password *" type={showPass? "text" : "password"} value={form.pass} onChange={e => setForm({...form, pass: e.target.value})} /><span onClick={() => setShowPass(!showPass)}>👁️</span></div>
+        <input className="auth-input" placeholder="No. WhatsApp *" value={form.wa} onChange={e => setForm({...form, wa: e.target.value})} />
+        <input className="auth-input" placeholder="Umur *" type="number" value={form.umur} onChange={e => setForm({...form, umur: e.target.value})} />
+        <input className="auth-input" placeholder="Bidang Studi *" value={form.bidang} onChange={e => setForm({...form, bidang: e.target.value})} />
+        <input className="auth-input" placeholder="Domisili *" value={form.domisili} onChange={e => setForm({...form, domisili: e.target.value})} />
         <button className="btn-primary" onClick={daftar}>Daftar Sekarang</button>
         <p className="auth-text">Sudah punya akun? <span className="link" onClick={() => setPage('login')}>Masuk</span></p>
       </div>
@@ -177,9 +184,46 @@ function DaftarPage({ setPage, showPopup }) {
   )
 }
 
+function CariPage({ users }) {
+  const [search, setSearch] = useState('')
+  const filtered = users.filter(u => u.nama?.toLowerCase().includes(search.toLowerCase()) || u.bidang?.toLowerCase().includes(search.toLowerCase()))
+  return(
+    <div className="content">
+      <h2>🔍 Cari Anggota</h2>
+      <input className="auth-input" placeholder="Cari nama atau bidang..." value={search} onChange={e => setSearch(e.target.value)} />
+      {filtered.map(u => (
+        <div className="admin-card" key={u.id}>
+          <p><b>{u.nama}</b></p>
+          <p style={{color:'#aaa', fontSize:'13px'}}>{u.bidang} - {u.tipe}</p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function PostPage({ showPopup, setPage }) {
+  const [text, setText] = useState('')
+  return(
+    <div className="content">
+      <h2>➕ Buat Postingan</h2>
+      <textarea className="auth-input" placeholder="Tulis sesuatu..." rows="5" value={text} onChange={e => setText(e.target.value)}></textarea>
+      <button className="btn-primary" onClick={() => {showPopup('Berhasil', 'Postingan terkirim'); setPage('beranda')}}>Kirim</button>
+    </div>
+  )
+}
+
+function InboxPage() {
+  return(
+    <div className="content">
+      <h2>💬 Inbox</h2>
+      <div className="empty-state">Belum ada pesan masuk</div>
+    </div>
+  )
+}
+
 function AdminPanel({ users, setPage, adminTab, setAdminTab, showPopup }) {
   const pendingUsers = users.filter(u => u.status === 'pending')
-  async function verifikasiUser(uid) {
+  const verifikasiUser = async (uid) => {
     await updateDoc(doc(db, "users", uid), { status: 'aktif', isMember: true, tipe: 'admin' })
     showPopup('Berhasil', 'User berhasil diverifikasi!')
   }
@@ -216,10 +260,11 @@ function AdminPanel({ users, setPage, adminTab, setAdminTab, showPopup }) {
   )
 }
 
-function BerandaPage({ setPage }) {
+function BerandaPage() {
   return <div className="content"><h2>Beranda Quanta</h2><p>Selamat datang di Quanta</p></div>
 }
-function ProfilPage({ user, userData, setPage }) {
+
+function ProfilPage({ userData, setPage }) {
   return(
     <div className="profil-page">
       <div className="profil-header"><button onClick={() => setPage('beranda')}>←</button><h2>Profil Saya</h2></div>
@@ -227,7 +272,7 @@ function ProfilPage({ user, userData, setPage }) {
         <div className="avatar-big">{userData?.nama?.split(' ').map(n=>n[0]).join('')}</div>
         <h3>{userData?.nama}</h3>
         <p className="profil-status">{userData?.tipe}</p>
-        <p style={{color:'#888', fontSize:'13px'}}>{userData?.email}</p>
+        <p style={{color:'#888', fontSize:'13px', marginBottom:'20px'}}>{userData?.email}</p>
         <button className="btn-logout" onClick={() => signOut(auth)}>Keluar</button>
       </div>
     </div>
