@@ -1,123 +1,152 @@
-/* ===== FITUR ACADEMIC HUB ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* 1. CARD MATERI - VERSI GLASSMORPHIC */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #0f0f0f; color: #fff; transition: all 0.3s; }
+button { cursor: pointer; border: none; }
+input, textarea, select { outline: none; font-family: 'Inter', sans-serif; }
+
+/* ===== TEMA ===== */
+.gelap { background: #0a0a0a; color: #fff; }
+.terang { background: #f8f9fa; color: #111; }
+.terang .post-card, .terang .glass-box, .terang .navbar, .terang .top-navbar, .terang .materi-card { background: #fff; color: #111; border: 1px solid #e9e9e9; }
+.terang .auth-input, .terang .upload-label { background: #f1f1f1; border: 1px solid #ddd; color: #111; }
+
+.glassmorphic .glass-box, .glassmorphic .post-card, .glassmorphic .navbar, .glassmorphic .materi-card {
+  backdrop-filter: blur(20px); 
+  background: rgba(20,20,20,0.6); 
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.terang.glassmorphic .glass-box, .terang.glassmorphic .materi-card {
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* ===== LANDING ===== */
+.landing-container { min-height: 100vh; }
+.dev-banner { background: #f59e0b; color: #000; text-align: center; padding: 10px; font-weight: 600; font-size: 14px; }
+.landing-nav { display: flex; justify-content: space-between; padding: 20px 8%; align-items: center; position: sticky; top: 0; z-index: 10; }
+.nav-left h1 { color: #6366f1; font-size: 28px; font-weight: 700; }
+.nav-left p { font-size: 10px; opacity: 0.6; letter-spacing: 2px; }
+.btn-nav { background: #6366f1; color: #fff; padding: 10px 20px; border-radius: 10px; font-weight: 600; }
+.hero { text-align: center; padding: 120px 20px 80px; }
+.hero h1 { font-size: 48px; margin-bottom: 20px; font-weight: 700; line-height: 1.2; }
+.hero p { font-size: 18px; opacity: 0.7; max-width: 600px; margin: 0 auto 30px; }
+.hero-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 30px; }
+.btn-primary { background: #6366f1; color: #fff; padding: 14px 28px; border-radius: 12px; font-weight: 600; transition: all 0.2s; }
+.btn-primary:hover { transform: translateY(-2px); background: #4f46e5; }
+.btn-secondary { background: transparent; border: 2px solid #6366f1; color: #6366f1; padding: 12px 26px; border-radius: 12px; font-weight: 600; text-decoration: none; }
+.features { padding: 80px 8%; }
+.features h2 { text-align: center; font-size: 32px; margin-bottom: 50px; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
+.feature-card { padding: 35px; border-radius: 20px; text-align: center; }
+.icon { font-size: 45px; margin-bottom: 15px; }
+.landing-footer { padding: 40px 8%; border-top: 1px solid #222; text-align: center; opacity: 0.6; }
+
+/* ===== AUTH ===== */
+.auth-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.glass-box { width: 100%; max-width: 480px; padding: 45px; border-radius: 24px; }
+.logo-big { font-size: 52px; color: #6366f1; text-align: center; font-weight: 700; }
+.welcome-top { text-align: center; opacity: 0.6; margin-bottom: 5px; }
+.auth-tabs { display: flex; gap: 10px; margin: 25px 0; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 12px; }
+.auth-tabs button { flex: 1; padding: 12px; background: transparent; border-radius: 10px; color: #fff; font-weight: 600; }
+.tab-active { background: #6366f1 !important; }
+.auth-input { width: 100%; padding: 14px; margin-bottom: 14px; border-radius: 12px; background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff; font-size: 15px; }
+.password-wrapper { position: relative; }
+.eye-icon { position: absolute; right: 15px; top: 14px; cursor: pointer; opacity: 0.6; }
+.user-type-selector { margin-bottom: 20px; }
+.type-buttons { display: flex; gap: 10px; }
+.type-buttons button { flex: 1; padding: 12px; background: #1a1a1a; border-radius: 10px; font-weight: 500; }
+.type-active { background: #6366f1 !important; }
+.kode-unik-box { background: #1a1a1a; padding: 18px; border-radius: 12px; margin-bottom: 18px; }
+.btn-generate { background: #10b981; color: #fff; padding: 10px 18px; border-radius: 10px; margin-top: 12px; font-weight: 600; }
+.kode-hasil { margin-top: 12px; font-weight: 700; color: #10b981; font-size: 18px; letter-spacing: 1px; }
+.error-text { color: #ef4444; margin-bottom: 12px; font-size: 14px; }
+
+/* ===== NAVBAR ===== */
+.top-navbar { display: flex; justify-content: space-between; padding: 16px 20px; position: sticky; top: 0; z-index: 10; }
+.top-navbar h1 { color: #6366f1; font-size: 24px; }
+.top-navbar p { font-size: 10px; opacity: 0.6; }
+.icon-btn { background: rgba(255,255,255,0.1); padding: 10px 12px; border-radius: 12px; font-size: 20px; }
+.navbar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; padding: 10px; border-radius: 24px; z-index: 100; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 16px; background: transparent; color: #aaa; border-radius: 18px; font-size: 12px; font-weight: 500; }
+.nav-item.active { background: #6366f1; color: #fff; }
+.nav-add { background: #6366f1 !important; color: #fff !important; font-size: 28px; padding: 14px 20px; font-weight: 700; }
+.page-content { padding: 20px; padding-bottom: 120px; max-width: 900px; margin: 0 auto; }
+
+/* ===== CARD MATERI - UTAMA ===== */
 .materi-card {
-  padding: 20px;
+  padding: 22px;
   border-radius: 18px;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
   border-left: 4px solid #6366f1;
 }
 .materi-card:hover {
-  transform: translateY(-3px);
-  background: rgba(99, 102, 241, 0.1);
+  transform: translateY(-4px);
+  background: rgba(99, 102, 241, 0.12);
+  border-left: 4px solid #818cf8;
 }
 .materi-card .tag {
   display: inline-block;
   background: rgba(99, 102, 241, 0.2);
-  color: #6366f1;
-  padding: 4px 10px;
+  color: #818cf8;
+  padding: 5px 12px;
   border-radius: 20px;
   font-size: 11px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-.materi-card h3 {
-  font-size: 18px;
-  margin-bottom: 8px;
-}
-.materi-card p {
-  font-size: 14px;
-  opacity: 0.8;
+  font-weight: 700;
   margin-bottom: 10px;
+  text-transform: uppercase;
 }
-.materi-card small {
-  font-size: 12px;
-  opacity: 0.6;
-}
+.materi-card h3 { font-size: 19px; margin-bottom: 8px; font-weight: 600; }
+.materi-card p { font-size: 14px; opacity: 0.8; margin-bottom: 12px; line-height: 1.5; }
+.materi-card small { font-size: 12px; opacity: 0.6; }
 
-/* 2. HALAMAN UPLOAD MATERI */
-.upload-page {
-  max-width: 700px;
-  margin: 0 auto;
-}
-.upload-page h2 {
-  margin-bottom: 20px;
-  text-align: center;
-}
-.filter-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 10px;
-}
-.upload-page .btn-primary {
-  width: 100%;
-  margin-top: 10px;
-}
+/* ===== UPLOAD + EKSPLORASI ===== */
+.upload-page, .eksplorasi-page { max-width: 700px; margin: 0 auto; }
+.upload-page h2, .eksplorasi-page h2 { margin-bottom: 25px; text-align: center; font-size: 28px; }
+.filter-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.filter-bar { display: flex; gap: 12px; margin-bottom: 25px; position: sticky; top: 75px; z-index: 5; padding: 12px 0; }
+.filter-bar .auth-input { margin-bottom: 0; }
+.materi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+.upload-label { display: block; padding: 14px; background: #1a1a1a; border-radius: 12px; text-align: center; margin: 12px 0; cursor: pointer; border: 2px dashed #333; }
+.textarea { min-height: 120px; resize: vertical; }
 
-/* 3. HALAMAN EKSPLORASI + FILTER */
-.eksplorasi-page h2 {
-  margin-bottom: 20px;
-}
-.filter-bar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 25px;
-  position: sticky;
-  top: 70px;
-  z-index: 5;
-  padding: 10px 0;
-  background: inherit;
-}
-.filter-bar .auth-input {
-  margin-bottom: 0;
-}
-.materi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 15px;
-}
-
-/* 4. PANEL ADMIN / RUANG KURATOR */
-.admin-page h2, .admin-page h3 {
-  margin-bottom: 15px;
-}
+/* ===== ADMIN ===== */
+.admin-page h2, .admin-page h3 { margin-bottom: 18px; }
 .admin-card {
-  padding: 15px;
-  border-radius: 15px;
+  padding: 18px;
+  border-radius: 16px;
   background: rgba(255, 193, 7, 0.1);
   border: 1px solid rgba(255, 193, 7, 0.3);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
-.admin-card h4 {
-  color: #fbbf24;
-  margin-bottom: 5px;
-}
-.admin-card p {
-  font-size: 13px;
-  opacity: 0.8;
-  margin-bottom: 10px;
-}
-.admin-card a {
-  color: #6366f1;
-  margin-right: 10px;
-  font-size: 14px;
-}
-.admin-card .btn-primary {
-  padding: 8px 15px;
-  margin-right: 8px;
-}
+.admin-card h4 { color: #fbbf24; margin-bottom: 6px; font-size: 16px; }
+.admin-card p { font-size: 13px; opacity: 0.8; margin-bottom: 12px; }
+.admin-card a { color: #818cf8; margin-right: 12px; font-size: 14px; font-weight: 600; }
 
-/* 5. UPDATE UNTUK TEMA TERANG */
-.terang .materi-card { background: #fff; border: 1px solid #e5e5e5; }
-.terang .materi-card:hover { background: #f5f5ff; }
-.terang .admin-card { background: #fffbeb; border: 1px solid #fde68a; }
-.terang .upload-label { background: #eee; }
+/* ===== PROFIL ===== */
+.profil-page { max-width: 600px; margin: 0 auto; }
+.profile-card { text-align: center; padding: 30px; border-radius: 20px; margin-bottom: 25px; }
+.avatar { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #818cf8); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 700; margin: 0 auto 15px; }
+.badge { padding: 6px 14px; border-radius: 20px; background: #6366f1; font-size: 12px; font-weight: 700; text-transform: capitalize; }
+.badge.anggota { background: #10b981; }
+.badge.pengunjung { background: #f59e0b; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center; margin: 25px 0; }
+.stats-grid h3 { font-size: 28px; color: #6366f1; font-weight: 700; }
+.btn-logout { background: #ef4444; color: #fff; width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; }
 
-/* 6. RESPONSIVE HP */
+/* ===== LAINNYA ===== */
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #10b981; padding: 14px 26px; border-radius: 12px; z-index: 999; font-weight: 600; }
+.btn-back { background: none; color: #818cf8; font-size: 16px; margin-bottom: 20px; font-weight: 600; }
+.empty-state { text-align: center; opacity: 0.6; margin-top: 60px; font-size: 16px; }
+.post-detail-page { max-width: 700px; margin: 0 auto; }
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
+  .hero h1 { font-size: 32px; }
   .filter-row { grid-template-columns: 1fr; }
   .filter-bar { flex-direction: column; }
   .materi-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
